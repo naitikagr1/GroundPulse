@@ -106,7 +106,7 @@ export function Nav() {
               )))}
             </nav>
             {APPS_LIVE && <Link href="/signin" className="btn btn-ghost ml-1 hidden rounded-full px-4 text-[15px] font-medium md:inline-flex">Sign in</Link>}
-            <Link href="/access" className="btn btn-pill ml-1 hidden md:inline-flex">Get started</Link>
+            <Link href="/access" className="btn btn-pill ml-1 hidden md:inline-flex">Sign up</Link>
             <button onClick={() => setOpen((v) => !v)} aria-expanded={open} aria-label={open ? "Close menu" : "Open menu"} className="relative z-[60] ml-1 grid h-11 w-11 place-items-center rounded-full lg:hidden">
               <span className="relative block h-[10px] w-[20px]">
                 <span className={cn("absolute left-0 top-0 h-[2px] w-full rounded bg-ink transition-transform duration-500 [transition-timing-function:cubic-bezier(.16,1,.3,1)]", open && "translate-y-[4px] rotate-45")} />
@@ -138,7 +138,7 @@ export function Nav() {
                 ))}
               </motion.ul>
               <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35, duration: 0.5, ease: EASE }} className="mt-auto">
-                <Link href="/access" className="btn btn-accent btn-lg w-full">Get started <ArrowRight size={16} /></Link>
+                <Link href="/access" className="btn btn-accent btn-lg w-full">Sign up <ArrowRight size={16} /></Link>
                 {APPS_LIVE && <Link href="/signin" className="btn btn-white btn-lg mt-2 w-full">Sign in to your account</Link>}
                 <p className="t-small mt-4 text-center">Takes 5 minutes · Your media stays private</p>
               </motion.div>

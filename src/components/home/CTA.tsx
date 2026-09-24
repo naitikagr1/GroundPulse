@@ -8,7 +8,7 @@ export function CTA({ title = "Get your first inspection", lede = "Register a ho
         <Reveal className="mx-auto max-w-[684px] text-center">
           <h2 className="serif t-display text-balance">{title}</h2>
           <p className="t-lede mx-auto mt-4 max-w-[50ch] text-text-2">{lede}</p>
-          <div className="mx-auto mt-8"><AddressBar cta="Get started" /></div>
+          <div className="mx-auto mt-8"><AddressBar cta="Sign up" /></div>
           <p className="mt-4 text-[14px] text-text-2">Takes 5 minutes · Your media stays private · No repair without your approval</p>
         </Reveal>
       </div>

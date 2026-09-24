@@ -32,7 +32,7 @@ export function StickyBar() {
           <div className="addr addr-sm !bg-white !shadow-[0_0_0_1px_var(--line-2),0_20px_40px_-16px_rgba(35,32,29,.35)]">
             <MapPin size={16} className="shrink-0 text-text-2" />
             <input value={v} onChange={(e) => setV(e.target.value)} placeholder="Enter your property address" aria-label="Property address" />
-            <button type="submit" className="btn btn-accent h-10 w-10 shrink-0 p-0 sm:w-auto sm:px-5" aria-label="Get started"><span className="hidden sm:inline">Get started</span><ArrowRight size={16} /></button>
+            <button type="submit" className="btn btn-accent h-10 w-10 shrink-0 p-0 sm:w-auto sm:px-5" aria-label="Sign up"><span className="hidden sm:inline">Sign up</span><ArrowRight size={16} /></button>
           </div>
         </motion.form>
       )}
