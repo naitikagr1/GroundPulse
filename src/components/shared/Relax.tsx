@@ -1,4 +1,4 @@
-import { BadgeCheck, BadgeIndianRupee, KeyRound, PhoneCall, ShieldCheck, ThumbsUp, Video } from "lucide-react";
+import { BadgeCheck, KeyRound, PhoneCall, ShieldCheck, ThumbsUp, Video } from "lucide-react";
 import { Reveal } from "@/components/ui/Reveal";
 import { cn } from "@/lib/cn";
 import { damageCover } from "@/lib/pricing";
@@ -9,23 +9,8 @@ export const relaxPoints = [
   { I: Video, t: "Every room is on video.", b: "Every room you list is filmed, and we walk through the whole home on video before we leave." },
   { I: PhoneCall, t: "Watch the visit live, if you want.", b: "The inspector video-calls you at the start and the end — you, your parents or your caretaker see it live, from anywhere." },
   { I: ThumbsUp, t: "Nothing happens without your yes.", b: "Repairs, cleaning, money — your approval first, with the exact amount." },
-  { I: ShieldCheck, t: "We fix what we damage.", b: "If we break something during a visit, we repair or replace it at our cost. Cupboards, wardrobes and lockers are never opened.", hero: true },
+  { I: ShieldCheck, t: `We fix what we damage — up to ${damageCover.words}.`, b: "If we break something during a visit, we repair or replace it at our cost. Cupboards, wardrobes and lockers are never opened.", hero: true },
 ];
-
-/** The cap on that promise, said where the promise is — as a badge, not a footnote. */
-function Covered({ tone }: { tone: "light" | "dark" | "solid" }) {
-  return (
-    <span className={cn(
-      "mt-2.5 inline-flex items-center gap-1.5 rounded-[12px] px-2.5 py-1 text-[12px] font-medium leading-snug sm:rounded-full sm:px-3 sm:text-[12.5px]",
-      tone === "light" && "bg-accent text-white",
-      tone === "dark" && "bg-white/15 text-white",
-      tone === "solid" && "bg-white text-accent",
-    )}>
-      <BadgeIndianRupee size={14} className="shrink-0" />
-      <span>Covered up to <b className="font-semibold">{damageCover.words}</b> per visit</span>
-    </span>
-  );
-}
 
 export const relaxTagline = `One verified person. Your go-ahead before anyone enters. Every room on video — live if you want. Your approval for everything. And if we damage something, we fix it at our cost — up to ${damageCover.words} a visit.`;
 
@@ -39,7 +24,7 @@ export function Relax({ variant = "strip", className }: { variant?: "strip" | "d
           {relaxPoints.map(({ I, t, b, hero }) => (
             <li key={t} className={cn("flex items-start gap-2.5 text-[13px]", hero && "rounded-[10px] bg-white/10 p-2.5")}>
               <I size={14} className="mt-[3px] shrink-0 text-[#7be3a5]" />
-              <span><span className="font-medium text-white">{t}</span> <span className="text-white/65">{b}</span>{hero && <><br /><Covered tone="dark" /></>}</span>
+              <span><span className="font-medium text-white">{t}</span> <span className="text-white/65">{b}</span></span>
             </li>
           ))}
         </ul>
@@ -53,7 +38,7 @@ export function Relax({ variant = "strip", className }: { variant?: "strip" | "d
         {relaxPoints.map(({ I, t, b, hero }) => (
           <li key={t} className={cn("flex flex-col gap-2.5 rounded-[12px] p-3 text-[13px] leading-snug sm:flex-row sm:items-start sm:gap-3 sm:p-3.5 sm:text-[14.5px] sm:leading-normal", hero ? "bg-accent text-white" : "bg-white shadow-card")}>
             <span className={cn("grid h-8 w-8 shrink-0 place-items-center rounded-full sm:h-9 sm:w-9", hero ? "bg-white/15 text-white" : "bg-accent-soft text-accent")}><I size={15} /></span>
-            <span><span className="font-medium">{t}</span> <span className={hero ? "text-white/85" : "text-text-2"}>{b}</span>{hero && <><br /><Covered tone="solid" /></>}</span>
+            <span><span className="font-medium">{t}</span> <span className={hero ? "text-white/85" : "text-text-2"}>{b}</span></span>
           </li>
         ))}
       </ul>
@@ -71,7 +56,7 @@ export function Relax({ variant = "strip", className }: { variant?: "strip" | "d
             {relaxPoints.map(({ I, t, b, hero }, i) => (
               <li key={t} className={cn("flex flex-col gap-2.5 p-4 sm:flex-row sm:items-start sm:gap-3 sm:p-5", i % 2 === 1 && "border-l border-line", i >= 2 && "border-t border-line lg:border-t-0", i > 0 && "lg:border-l lg:border-line", hero && "bg-accent-tint")}>
                 <span className={cn("grid h-9 w-9 shrink-0 place-items-center rounded-full sm:h-10 sm:w-10", hero ? "bg-accent text-white" : "bg-accent-soft text-accent")}><I size={16} /></span>
-                <div><div className="text-[14px] font-medium leading-tight sm:text-[14.5px]">{t}</div><div className="t-small mt-1 text-[12.5px] leading-snug sm:text-[13px]">{b}</div>{hero && <Covered tone="light" />}</div>
+                <div><div className="text-[14px] font-medium leading-tight sm:text-[14.5px]">{t}</div><div className="t-small mt-1 text-[12.5px] leading-snug sm:text-[13px]">{b}</div></div>
               </li>
             ))}
           </ul>
