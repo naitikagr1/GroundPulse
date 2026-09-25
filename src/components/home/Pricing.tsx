@@ -21,7 +21,10 @@ const tabNote: Record<Tab, string> = {
   plot: "Empty plots, farmland, ancestral land · any size",
 };
 
-export function Pricing({ full }: { full?: boolean }) {
+/* `relax` is off on the homepage, which already carries the same "Why you can
+   relax" block directly under the hero — two copies on one page reads as
+   padding rather than reassurance. */
+export function Pricing({ full, relax = true }: { full?: boolean; relax?: boolean }) {
   const [tab, setTab] = useState<Tab>("home");
   const list = tab === "home" ? plans : tab === "plot" ? plotPlans : [];
   return (
@@ -200,16 +203,17 @@ export function Pricing({ full }: { full?: boolean }) {
           </div>
         </Reveal>
 
-        {/* why you can relax */}
-        <Reveal className="mt-4">
-          <div className="card bg-beige p-5 sm:p-7">
-            <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
-              <div className="text-[18px] font-medium tracking-[-0.02em]">Why you can relax</div>
-              <div className="t-small max-w-[60ch]">Repairs are always the verified pro's quote + a 15% fee, approved by you. No brokerage, no hidden commission.</div>
+        {relax && (
+          <Reveal className="mt-4">
+            <div className="card bg-beige p-5 sm:p-7">
+              <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+                <div className="text-[18px] font-medium tracking-[-0.02em]">Why you can relax</div>
+                <div className="t-small max-w-[60ch]">Repairs are always the verified pro's quote + a 15% fee, approved by you. No brokerage, no hidden commission.</div>
+              </div>
+              <Relax variant="list" className="mt-5 sm:grid-cols-2" />
             </div>
-            <Relax variant="list" className="mt-5 sm:grid-cols-2" />
-          </div>
-        </Reveal>
+          </Reveal>
+        )}
 
         {full && (
           <>
