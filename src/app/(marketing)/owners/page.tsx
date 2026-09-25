@@ -11,7 +11,6 @@ import { Neighbour } from "@/components/home/Neighbour";
 import { ComingHome } from "@/components/home/ComingHome";
 import { Pricing } from "@/components/home/Pricing";
 import { CTA } from "@/components/home/CTA";
-import { Founders } from "@/components/home/Founders";
 import { BetaNote } from "@/components/shared/BetaNote";
 
 export const metadata: Metadata = {
@@ -68,7 +67,6 @@ export default function Page() {
       <Pricing />
       <Compare />
       <Neighbour />
-      <Founders />
       <CTA />
     </>
   );
