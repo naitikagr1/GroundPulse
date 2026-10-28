@@ -14,6 +14,7 @@
    the same routes write and serve them — so recording works locally.
    ════════════════════════════════════════════════════════════════ */
 
+import { randomUUID } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { AwsClient } from "aws4fetch";
@@ -79,6 +80,13 @@ export async function viewUrl(key: string) {
   return onDisk() ? null : presign(key, "GET", 600);
 }
 
+/** Write a file of our own (a backup) straight to the bucket. */
+export async function putObject(key: string, body: Buffer, type: string) {
+  if (!bucket()) throw new Error("No bucket: set the R2_* variables.");
+  const res = await aws().fetch(objectUrl(key), { method: "PUT", body: new Uint8Array(body), headers: { "content-type": type } });
+  if (!res.ok) throw new Error(`R2 said ${res.status}: ${(await res.text()).slice(0, 200)}`);
+}
+
 /** Did the upload actually land, and how big is it? */
 export async function stored(key: string): Promise<number | null> {
   if (!validKey(key)) return null;
@@ -117,7 +125,79 @@ export async function readVideo(raw: string, prefix: string): Promise<Video | nu
   return {
     id: String(v.id ?? "").slice(0, 60) || key.split("/")[2].split(".")[0],
     key, mime, sizeBytes: size, durationS: Math.round(durationS),
-    poster: poster.startsWith("data:image/") ? poster.slice(0, 80_000) : "",
+    poster: await keepImage(poster.slice(0, 80_000)),
     at: new Date().toISOString(), lat: num(v.lat), lng: num(v.lng),
   };
+}
+
+/* ── photographs ─────────────────────────────────────────────────
+   A photo reaches the server as a small JPEG data URL from the phone.
+   Kept inline, a visit's photos and clip posters would be most of the
+   database, and every page would read them all. So each one goes to
+   the same bucket under photos/, and the record keeps only its address.
+
+   Unlike a clip, the address is the permission. It is a random UUID
+   that only ever appears on a page the viewer was already allowed to
+   see — exactly where the inline image used to sit — so a live repair,
+   a released report and the family link all keep working without a
+   second copy of their rules. */
+
+export const PHOTO_PATH = "/api/media/photo/";
+const IMG_EXT: Record<string, string> = { "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp" };
+const IMG_MIME: Record<string, string> = { jpg: "image/jpeg", png: "image/png", webp: "image/webp" };
+const PHOTO_NAME = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.(jpg|png|webp)$/;
+const DATA_URL = /^data:(image\/(?:jpeg|png|webp));base64,([A-Za-z0-9+/]+={0,2})$/;
+/** a 320px thumbnail or a clip poster is well inside this */
+const MAX_PHOTO_BYTES = 150_000;
+
+export const validPhotoName = (name: string) => PHOTO_NAME.test(name);
+const photoDisk = (name: string) => path.join(DIR, "photos", name);
+
+/** Store a photo the phone sent and return the address to keep in its
+    place. An address we minted passes straight through, so a form that
+    sends back what it was given does not copy anything. Anything that
+    is not a photo comes back as "". */
+export async function keepImage(src: string): Promise<string> {
+  if (src.startsWith(PHOTO_PATH) && validPhotoName(src.slice(PHOTO_PATH.length))) return src;
+  const m = DATA_URL.exec(src);
+  if (!m) return "";
+  const bytes = Buffer.from(m[2], "base64");
+  if (!bytes.length || bytes.length > MAX_PHOTO_BYTES) return "";
+  if (!mediaReady()) return src;
+
+  const name = `${randomUUID()}.${IMG_EXT[m[1]]}`;
+  try {
+    if (onDisk()) {
+      fs.mkdirSync(path.dirname(photoDisk(name)), { recursive: true });
+      fs.writeFileSync(photoDisk(name), bytes);
+    } else {
+      const res = await aws().fetch(objectUrl(`photos/${name}`), {
+        method: "PUT", body: bytes, headers: { "content-type": m[1] },
+      });
+      if (!res.ok) throw new Error(`R2 said ${res.status}`);
+    }
+    return PHOTO_PATH + name;
+  } catch (err) {
+    /* Evidence is never dropped for want of a bucket: it stays in the
+       record, as it always used to, and the next photo tries again. */
+    console.error("[media] photo kept inline, storage refused it", err);
+    return src;
+  }
+}
+
+/** The bytes behind an address from keepImage, or null. */
+export async function readPhoto(name: string): Promise<{ body: ArrayBuffer; type: string } | null> {
+  if (!validPhotoName(name)) return null;
+  const type = IMG_MIME[name.split(".").pop()!];
+  try {
+    if (onDisk()) {
+      const buf = fs.readFileSync(photoDisk(name));
+      return { body: buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength) as ArrayBuffer, type };
+    }
+    if (!bucket()) return null;
+    const res = await aws().fetch(objectUrl(`photos/${name}`));
+    return res.ok ? { body: await res.arrayBuffer(), type } : null;
+  } catch {
+    return null;
+  }
 }

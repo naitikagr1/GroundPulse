@@ -1,14 +1,18 @@
 /* ════════════════════════════════════════════════════════════════
-   The local store.
+   The store.
 
-   One JSON file under `.data/`, read into memory once per server
-   process and written back on every mutation. It exists so the whole
-   owner app runs with `npm run dev` and nothing else installed — no
-   Postgres, no Docker, no connection string.
+   Everything the app knows is one object (`DB` in lib/types), read
+   with db() and changed with mutate(). Where it is kept depends on
+   DATABASE_URL:
 
-   Every function is async and every query is scoped by owner, which
-   is the shape a real database layer needs anyway. Swapping in
-   Postgres later means rewriting this file and nothing above it.
+   · set — Postgres (lib/storePg). Production always; a laptop too,
+     when you want to test against the real thing.
+   · not set — one JSON file under `.data/`, read into memory once per
+     server process and written back on every mutation, so the whole
+     app runs with `npm run dev` and nothing else installed.
+
+   Every function is async and every query is scoped by owner, so
+   nothing above this file knows which one it is talking to.
    ════════════════════════════════════════════════════════════════ */
 
 import { randomUUID } from "node:crypto";
@@ -19,13 +23,13 @@ import { demoData, emptyStore, opsUser, seed } from "@/lib/seed";
 import { normaliseCity } from "@/lib/city";
 import { planAllowance } from "@/lib/plans";
 import { STORE_VERSION } from "@/lib/storeVersion";
+import { db as postgres } from "@/lib/db";
+import { pgRead, pgWrite, type PgInit } from "@/lib/storePg";
 
 /* Locally this sits next to the code, where it is easy to inspect and
    easy to delete. On a serverless host the working directory is
-   read-only, so it falls back to the one writable path there — which
-   survives between requests on the same instance, but not between
-   instances and not across a redeploy. That is a stopgap, not a
-   database: see the note in the README before relying on it. */
+   read-only, so a build there writes to /tmp — but a deployment never
+   serves from this file: see noDatabase() below. */
 const WRITABLE = process.env.VERCEL ? "/tmp" : process.cwd();
 const DIR = path.join(WRITABLE, ".data");
 const FILE = path.join(DIR, "store.json");
@@ -250,13 +254,31 @@ function flush() {
   }
 }
 
+/* An empty database starts empty — even from a laptop, which would
+   otherwise seed the made-up demo owners into whatever database
+   DATABASE_URL points at. DEMO_DATA=1 asks for them on purpose. */
+const PG: PgInit = { fresh: () => (process.env.DEMO_DATA === "1" ? seed() : emptyStore()), migrate };
+
+/* A deployment without a database would keep its data in one
+   instance's /tmp — different on every instance and gone at the next
+   deploy. Bookings and payments must never live there, so it refuses. */
+function noDatabase() {
+  if (process.env.VERCEL) throw new Error("DATABASE_URL is not set: the app has nowhere to keep its data.");
+}
+
 /** Read-only view. Never mutate what comes back from here. */
 export async function db(): Promise<DB> {
+  const sql = postgres();
+  if (sql) return pgRead(sql, PG);
+  noDatabase();
   return load();
 }
 
 /** Mutate and persist in one step, so no caller can forget the write. */
 export async function mutate<T>(fn: (d: DB) => T): Promise<T> {
+  const sql = postgres();
+  if (sql) return pgWrite(sql, PG, fn);
+  noDatabase();
   const d = load();
   const out = fn(d);
   flush();
@@ -266,7 +288,9 @@ export async function mutate<T>(fn: (d: DB) => T): Promise<T> {
 export const uid = () => randomUUID();
 export const now = () => new Date().toISOString();
 
-/** Wipes the store so the next read re-seeds it. Used by `npm run reset`. */
+/** Wipes the file store so the next read re-seeds it. (`npm run reset`
+    does the same from the shell; a Postgres store is reset in SQL —
+    `truncate app.records; delete from app.meta;`.) */
 export function resetStore() {
   globalForStore._db = undefined;
   try { fs.rmSync(FILE, { force: true }); } catch { /* already gone */ }

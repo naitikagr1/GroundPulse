@@ -50,7 +50,7 @@ self.addEventListener("fetch", (e) => {
   }
 
   // Build output and icons are content-hashed or static: cache first.
-  if (DEV) return;
+  if (DEV || url.pathname.startsWith("/api/")) return;
   if (url.pathname.startsWith("/_next/static") || url.pathname.startsWith("/icons") || url.pathname.endsWith(".png") || url.pathname.endsWith(".webp")) {
     e.respondWith(
       caches.match(request).then((hit) =>

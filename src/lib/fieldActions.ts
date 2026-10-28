@@ -22,7 +22,7 @@ import { inReach } from "@/lib/city";
 import { fmtDayDate, fmtTime, todayKey } from "@/lib/format";
 import { pushEvent } from "@/lib/events";
 import { deliverReport } from "@/lib/lifecycle";
-import { discard, readVideo } from "@/lib/media";
+import { discard, keepImage, readVideo } from "@/lib/media";
 import { includedMinutes, overtimeFor } from "@/lib/payout";
 import { coverFor, urbanCompanyQuote } from "@/lib/repair";
 import { cancelLiveRepair, closeLive, notReadyToSend, sendLive } from "@/lib/liveRepairs";
@@ -204,11 +204,14 @@ export async function checkIn(_prev: FieldState, fd: FormData): Promise<FieldSta
     return { ok: false, error: `You are about ${distanceM} m from the pin the owner has. If that is right, say why before you go in.` };
   }
 
+  const doorPhoto = await keepImage(door);
+  if (!doorPhoto) return { ok: false, error: "That photo did not come through. Take it again." };
+
   await mutate((d) => {
     const v = d.visits.find((x) => x.id === id)!;
     v.status = "on_site";
     v.startedAt = now();
-    v.checkIn = { at: now(), lat, lng, accuracyM, distanceM, doorPhoto: photo(door, lat, lng), note: reason };
+    v.checkIn = { at: now(), lat, lng, accuracyM, distanceM, doorPhoto: photo(doorPhoto, lat, lng), note: reason };
     /* Nobody had marked the spot. The inspector is at the gate with the
        owner's code, so where they stand is the best pin there is — but
        it is the owner's property, so it waits for them to agree. */
@@ -317,13 +320,18 @@ export async function addPhoto(fd: FormData) {
   const lat = num(fd, "lat");
   const lng = num(fd, "lng");
   if (!thumb.startsWith("data:image/")) return false;
+  /* stored only for somebody who may be writing a checklist at all */
+  const { ins } = await me();
+  if (!ins) return false;
+  const kept = await keepImage(thumb);
+  if (!kept) return false;
 
   let full = false;
   const ok = await editDraft(id, (draft) => {
     const total = draft.reduce((n, r) => n + r.items.reduce((m, i) => m + i.photos.length, 0), 0);
     if (total >= MAX_PHOTOS) { full = true; return; }
     const it = draft.find((r) => r.name === room)?.items.find((x) => x.t === item);
-    if (it && !it.photos.some((p) => p.id === photoId)) it.photos.push(photo(thumb, lat, lng, photoId));
+    if (it && !it.photos.some((p) => p.id === photoId)) it.photos.push(photo(kept, lat, lng, photoId));
   });
   return ok && !full;
 }
@@ -355,13 +363,15 @@ export async function setCleanPhoto(fd: FormData): Promise<FieldState> {
   const photoId = str(fd, "photoId", 60);
   if (which !== "before" && which !== "after") return { ok: false, error: "Before or after?" };
   if (!thumb.startsWith("data:image/")) return { ok: false, error: "That photo did not come through. Take it again." };
+  const kept = await keepImage(thumb);
+  if (!kept) return { ok: false, error: "That photo did not come through. Take it again." };
 
   const error = await mutate((d) => {
     const v = d.visits.find((x) => x.id === id && x.inspectorId === ins.id);
     if (!v || v.status !== "on_site" || !v.draft) return "This visit is not open.";
     const r = v.draft.find((x) => x.name === room);
     if (!r || r.before === undefined) return "The crew does not clean that room.";
-    const shot = photo(thumb, num(fd, "lat"), num(fd, "lng"), photoId);
+    const shot = photo(kept, num(fd, "lat"), num(fd, "lng"), photoId);
     if (which === "before") {
       if (v.crewStartedAt) return "The crew has started — the before photos are closed.";
       r.before = shot;
@@ -671,6 +681,8 @@ export async function witnessRepair(_prev: FieldState, fd: FormData): Promise<Fi
   if (clip && !afterVideo) return { ok: false, error: "The after clip did not upload — record it again." };
   if (!after.startsWith("data:image/") && !afterVideo) return { ok: false, error: "Take an after photo or a clip — from the same spot as the first one." };
   if (note.length < 10) return { ok: false, error: "Say what was done, in a line — the owner reads this." };
+  const afterKept = after.startsWith("data:image/") ? await keepImage(after) : "";
+  if (!afterKept && !afterVideo) return { ok: false, error: "That photo did not come through. Take it again." };
 
   await mutate((d) => {
     const iss = d.issues.find((i) => i.id === id)!;
@@ -678,7 +690,7 @@ export async function witnessRepair(_prev: FieldState, fd: FormData): Promise<Fi
     r.status = "completed";
     r.completedAt = now();
     r.note = note;
-    r.afterPhoto = after.startsWith("data:image/") ? photo(after, lat, lng) : null;
+    r.afterPhoto = afterKept ? photo(afterKept, lat, lng) : null;
     r.afterVideo = afterVideo;
     pushEvent(d, {
       ownerId: iss.ownerId, propertyId: iss.propertyId, visitId: iss.visitId, type: "repair.completed",

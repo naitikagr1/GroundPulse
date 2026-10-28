@@ -24,6 +24,7 @@ import { fmtDayDate } from "@/lib/format";
 import { UPCOMING } from "@/lib/queries";
 import { inr } from "@/lib/pricing";
 import { DEPOSIT } from "@/lib/payout";
+import { keepImage } from "@/lib/media";
 import type { InspectorStatus } from "@/lib/types";
 
 export type OpsState = { ok: boolean; error?: string; message?: string };
@@ -241,6 +242,7 @@ export async function completeRepair(_prev: OpsState, fd: FormData): Promise<Ops
   const note = s(fd, "note", 800);
   const after = s(fd, "afterPhoto", 80_000);
   if (note.length < 10) return { ok: false, error: "Say what was done — the owner reads this." };
+  const afterKept = after.startsWith("data:image/") ? await keepImage(after) : "";
   const ok = await mutate((d) => {
     const iss = d.issues.find((x) => x.id === id);
     const r = iss?.repair;
@@ -248,7 +250,7 @@ export async function completeRepair(_prev: OpsState, fd: FormData): Promise<Ops
     r.status = "completed";
     r.completedAt = now();
     r.note = note;
-    r.afterPhoto = after.startsWith("data:image/") ? { id: uid(), thumb: after, at: now(), lat: null, lng: null } : null;
+    r.afterPhoto = afterKept ? { id: uid(), thumb: afterKept, at: now(), lat: null, lng: null } : null;
     pushEvent(d, {
       ownerId: iss.ownerId, propertyId: iss.propertyId, visitId: iss.visitId, type: "repair.completed",
       title: "Repair completed", body: `${iss.title} · ${r.providerName} · ${r.afterPhoto ? "after-photo attached" : "see the note"}`,

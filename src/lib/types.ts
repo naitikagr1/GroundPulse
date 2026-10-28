@@ -245,8 +245,8 @@ export type ItemState = "pass" | "attn" | "fail";
    report with an unanswered item must never be publishable. */
 export type Photo = {
   id: string;
-  /** a 320px JPEG data URL — the full-resolution original goes to object
-      storage in production; this is what the local store can hold */
+  /** where the 320px JPEG lives — /api/media/photo/<uuid>.jpg, from
+      keepImage in lib/media. Older records hold the data URL itself. */
   thumb: string;
   at: string;
   lat: number | null;

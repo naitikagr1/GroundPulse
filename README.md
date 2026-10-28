@@ -37,8 +37,8 @@ vercel env add NEXT_PUBLIC_APPS_LIVE production   # value: 1
 vercel --prod
 ```
 
-That is the only switch — `src/lib/flags.ts`. Do it after the data
-layer is on Postgres, not before: see "What persists" below.
+That is the only switch — `src/lib/flags.ts`. `DATABASE_URL` must point
+at the app's Postgres first: see "Where the data lives" below.
 
 ## The owner app
 
@@ -110,36 +110,33 @@ full-resolution original to object storage and keeps only the pointer.
 
 Owners are `9000000000` (Priya, the main demo), `9000000011`, `9000000012`.
 
-### What persists, and what does not
-
-Sessions are a signed cookie, so staying signed in works everywhere —
-locally, and across serverless instances in production.
-
-Everything else still lives in the JSON store, and that is per-process:
-
-- **The seeded demo** (Priya, the three inspectors, their properties,
-  reports and jobs) is rebuilt identically wherever the app runs, so
-  browsing it in production is solid.
-- **Anything created at runtime** — a new booking, an approved repair, a
-  brand-new account — lives only on the instance that handled the
-  request. Locally that is one process and it persists. In production it
-  may not survive the next request.
-
-So: demo and click through anywhere; test the flows that *write*
-something on localhost. Moving `store.ts` onto Postgres removes the
-distinction entirely.
-
 ### Where the data lives
 
-Locally, in one JSON file at `.data/store.json`, seeded on first run
-(`src/lib/seed.ts`). No Postgres, no Docker, no connection string — `npm run
-dev` is the whole setup. Every read goes through `src/lib/queries.ts` and every
-write through `src/lib/actions.ts`, both scoped by owner, so moving to Postgres
-is a rewrite of `src/lib/store.ts` and nothing above it.
+Everything goes through `db()` and `mutate()` in `src/lib/store.ts`, and
+where it lands depends on `DATABASE_URL`:
+
+- **Set** — Postgres (`src/lib/storePg.ts`): the schema `app` holds one row
+  per record, made by the app on first use. Writes take a lock on
+  `app.meta`, so instances never overwrite each other. Production must
+  have it — a deployment without it refuses to serve the app rather than
+  keep bookings in one instance's `/tmp`.
+- **Not set** — one JSON file at `.data/store.json`, seeded with the demo
+  on first run (`src/lib/seed.ts`). No Postgres, no Docker: `npm run dev`
+  is the whole setup.
+
+A Postgres store starts empty, even from a laptop; `DEMO_DATA=1` seeds the
+demo into it on purpose. The lead tables are made with `npm run migrate`.
 
 ```bash
-npm run reset   # clears the store; restart the dev server and it re-seeds
+npm run reset     # clears the file store; restart the dev server and it re-seeds
+npm run migrate   # runs migrations/*.sql against DATABASE_URL
+# a Postgres store is reset in SQL:  truncate app.records; delete from app.meta;
 ```
+
+Photos and clip posters go to the R2 bucket under `photos/`, and the record
+keeps only `/api/media/photo/<uuid>.jpg`. Every night at 03:00 IST
+`/api/cron/backup` writes the whole database to `backups/YYYY-MM-DD.json.gz`
+in the same bucket — it needs `CRON_SECRET` set in Vercel.
 
 ### Sign-in codes
 

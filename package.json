@@ -7,6 +7,7 @@
     "dev:lan": "next dev -H 0.0.0.0",
     "dev:https": "next dev -H 0.0.0.0 --experimental-https",
     "reset": "rm -rf .data && echo 'Local store cleared. Restart the dev server and it re-seeds.'",
+    "migrate": "node scripts/migrate.mjs",
     "build": "next build",
     "start": "next start",
     "lint": "eslint"
