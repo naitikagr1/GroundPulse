@@ -42,7 +42,7 @@ export async function startPayment(purpose: PaymentPurpose, refId: string): Prom
     if (!isBookable(v.scheduledFor, 1)) return { ok: false, error: "This visit's day is too close now — move it to a new day first, then pay." };
     const p = d.properties.find((x) => x.id === v.propertyId);
     amountInr = v.advanceInr;
-    description = `25% advance · ${p?.label ?? "Visit"} · ${fmtDayDate(v.scheduledFor)}`;
+    description = `${p?.label ?? "Visit"} · ${fmtDayDate(v.scheduledFor)}`;
   } else if (purpose === "invoice") {
     const inv = d.invoices.find((i) => i.id === refId && i.ownerId === user.id);
     if (!inv || inv.status !== "due") return { ok: false, error: "That bill is already settled." };

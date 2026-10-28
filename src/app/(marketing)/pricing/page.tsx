@@ -21,7 +21,7 @@ export default function Page() {
       <CoverTerms />
       <div className="h-6 md:h-10" />
       <FAQ />
-      <CTA title="Book your first visit" lede="Register a property and pick a plan in under five minutes. Move or cancel free until the day before — your advance comes back." />
+      <CTA title="Book your first visit" lede="Register a property and pick a plan in under five minutes. Move or cancel free until the day before — your money comes back." />
     </>
   );
 }

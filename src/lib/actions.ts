@@ -482,7 +482,7 @@ export async function bookVisit(_prev: FormState, fd: FormData): Promise<FormSta
   if (service && !planService) return { ok: false, error: "There are no maintenance services left on this plan year." };
   /* A plan whose own advance is unpaid gives nothing away yet. */
   const planUnpaid = !!sub && d0.visits.some((x) => x.id === sub.startedByVisitId && x.status === "unpaid");
-  if (planUnpaid && (usePlan || planClean || planService)) return { ok: false, error: `Pay the 25% on ${planName(sub!.planId)} first — then its visits and cleans are yours to book.` };
+  if (planUnpaid && (usePlan || planClean || planService)) return { ok: false, error: `Pay for ${planName(sub!.planId)} first — then its visits and cleans are yours to book.` };
 
   /* Whether the launch offer applies is decided here, never from the form… */
   const founding = !usePlan && eligible(user, spotsLeft(d0.visits), property, kind, planId);
@@ -505,7 +505,7 @@ export async function bookVisit(_prev: FormState, fd: FormData): Promise<FormSta
     planClean, planService: !!planService,
   });
   const buyingPlan = q.recurring;
-  /* 25% now; the visit goes on the board once it is paid. A free
+  /* Paid in full now; the visit goes on the board once it is. A free
      launch-offer inspection with nothing added owes nothing. */
   const advance = advanceOf(q.total);
   const firstStatus = advance > 0 ? "unpaid" : "scheduled";
@@ -540,8 +540,8 @@ export async function bookVisit(_prev: FormState, fd: FormData): Promise<FormSta
     if (advance > 0) {
       pushEvent(d, {
         ownerId: user.id, propertyId: property.id, visitId: v.id, type: "visit.booked",
-        title: "Booked — pay 25% to confirm",
-        body: `${property.label} · ${fmtDayDate(scheduledFor)} · ${slot} · ${inr(advance)} now, ${inr(q.total - advance)} when the report is ready`,
+        title: "Booked — pay to confirm",
+        body: `${property.label} · ${fmtDayDate(scheduledFor)} · ${slot} · ${inr(advance)} to confirm`,
         href: `/app/visits/${v.id}`, action: true,
       });
     } else if (founding) {
@@ -586,7 +586,7 @@ export async function bookVisit(_prev: FormState, fd: FormData): Promise<FormSta
       pushEvent(d, {
         ownerId: user.id, propertyId: property.id, visitId: v.id, type: "plan.started",
         title: `${planName(planId)} booked — the year is planned`,
-        body: `${property.label} · first visit ${fmtDayDate(scheduledFor)}, then ${next.map((x) => fmtDayDate(x)).join(", ")} · 25% now, the rest when the first report is ready`,
+        body: `${property.label} · first visit ${fmtDayDate(scheduledFor)}, then ${next.map((x) => fmtDayDate(x)).join(", ")} · paid in full when you confirm`,
         href: "/app/plan",
       });
     }
@@ -946,10 +946,10 @@ export async function cancelPlan(_prev: FormState, fd: FormData): Promise<FormSt
       x.status = "cancelled";
       for (const o of d.visits.filter((q) => q.subscriptionId === x.id && ["unpaid", "scheduled", "assigned"].includes(q.status))) cancelVisitIn(d, o, "plan cancelled");
     }
-    pushEvent(d, { ownerId: user.id, propertyId: x.propertyId, type: "plan.cancelled", title: `${planName(x.planId)} cancelled`, body: "It had not started — any advance paid is refunded", href: "/app/plan" });
+    pushEvent(d, { ownerId: user.id, propertyId: x.propertyId, type: "plan.cancelled", title: `${planName(x.planId)} cancelled`, body: "It had not started — anything paid is refunded", href: "/app/plan" });
   });
   if (sub.startedByVisitId) await refundOwed(user.id, sub.startedByVisitId);
   revalidatePath("/app", "layout");
   const paid = d0.invoices.some((i) => i.visitId === sub.startedByVisitId && i.stage === "advance" && i.status === "paid");
-  return { ok: true, message: paid ? "Cancelled. Your advance is on its way back to you." : "Cancelled. Nothing was charged." };
+  return { ok: true, message: paid ? "Cancelled. What you paid is on its way back to you." : "Cancelled. Nothing was charged." };
 }

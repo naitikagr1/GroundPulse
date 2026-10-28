@@ -121,7 +121,7 @@ function reportContext(d: DB, report: Report) {
   const issues = d.issues.filter((i) => i.reportId === report.id);
   return {
     report,
-    /** the 75% still owed — while it is, only the headline shows */
+    /** anything still owed on the visit — while it is, only the headline shows */
     balance: balanceDue(d, visit.id),
     property: d.properties.find((p) => p.id === report.propertyId)!,
     visit,
@@ -183,7 +183,7 @@ export async function invoices(ownerId: string) {
   return d.invoices.filter((i) => i.ownerId === ownerId).sort((a, b) => byDateDesc(a.createdAt, b.createdAt));
 }
 
-/** Bookings waiting on their 25% — not on anybody's board until it is paid. */
+/** Bookings waiting to be paid — not on anybody's board until they are. */
 export async function awaitingAdvance(ownerId: string) {
   const d = await db();
   return d.visits

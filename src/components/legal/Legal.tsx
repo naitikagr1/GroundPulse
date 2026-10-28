@@ -89,7 +89,7 @@ export function LegalPage({
             )}
             <div className="grid gap-10">{children}</div>
             <p className="t-small mt-12 border-t border-line pt-6 leading-relaxed">
-              {site.company} · {site.address} · <a className="underline underline-offset-2 hover:text-ink" href={`mailto:${site.contactEmail}`}>{site.contactEmail}</a>
+              {site.company} · run by {site.operator} · {site.address} · <a className="underline underline-offset-2 hover:text-ink" href={`mailto:${site.contactEmail}`}>{site.contactEmail}</a>
             </p>
           </article>
         </div>

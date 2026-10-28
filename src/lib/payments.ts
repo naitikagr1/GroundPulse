@@ -1,9 +1,10 @@
 /* ════════════════════════════════════════════════════════════════
    When money is due, and what paying it does.
 
-   · Booking: 25% up front. The visit is not on anybody's board until it
+   · Booking: paid in full. The visit is not on anybody's board until it
      is paid — a booking nobody paid for is not a booking.
-   · Report ready: the other 75%. Until then the owner sees the score and
+   · Report ready: whatever booking did not take — only older bookings,
+     made when a quarter was paid up front. Until then the owner sees the score and
      how much was flagged; the full report opens the moment it is paid.
    · A repair: paid in full when it is approved. Approving is paying.
    · The first inspection of the launch offer is free, so none of this
@@ -45,7 +46,7 @@ export function settlePayment(d: DB, pay: Payment, razorpayPaymentId: string, me
     d.invoices.push({
       id: uid(), ref: invoiceRef(d), ownerId: v.ownerId, propertyId: v.propertyId, visitId: v.id,
       issueId: null, subscriptionId: v.subscriptionId,
-      title: `Advance 25% · ${v.lines[0]?.k ?? "Visit"} · ${p?.label ?? ""}`,
+      title: `${v.lines[0]?.k ?? "Visit"} · ${p?.label ?? ""}`,
       amountInr: pay.amountInr, status: live ? "paid" : "refund_due",
       method: live ? method : `${method} · booking was cancelled — being refunded`,
       createdAt: now(), stage: "advance", paymentId: razorpayPaymentId,
@@ -59,8 +60,8 @@ export function settlePayment(d: DB, pay: Payment, razorpayPaymentId: string, me
     }
     pushEvent(d, {
       ownerId: v.ownerId, propertyId: v.propertyId, visitId: v.id, type: "visit.booked",
-      title: "Advance paid — your visit is confirmed",
-      body: `${p?.label ?? ""} · ${fmtDayDate(v.scheduledFor)} · ${v.slot} · ${inr(pay.amountInr)} paid, ${inr(Math.max(0, v.amountInr - pay.amountInr))} when the report is ready`,
+      title: "Paid — your visit is confirmed",
+      body: `${p?.label ?? ""} · ${fmtDayDate(v.scheduledFor)} · ${v.slot} · ${inr(pay.amountInr)} paid${v.amountInr > pay.amountInr ? `, ${inr(v.amountInr - pay.amountInr)} when the report is ready` : ""}`,
       href: `/app/visits/${v.id}`,
     });
     return true;

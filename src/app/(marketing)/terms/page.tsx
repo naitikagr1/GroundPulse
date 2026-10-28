@@ -8,7 +8,6 @@ import { LEAD_DAYS, WINDOW_DAYS } from "@/lib/format";
 import { DEPOSIT, hoursWords, OVERTIME } from "@/lib/payout";
 import { HOLD, PENALTY } from "@/lib/jobs";
 import { FEE_RATE } from "@/lib/repair";
-import { ADVANCE_RATE } from "@/lib/quote";
 import { CHECKIN_RADIUS_M } from "@/lib/geo";
 import { BEYOND_CITY_KM, HOME_CITY } from "@/lib/city";
 
@@ -25,8 +24,6 @@ export const metadata: Metadata = {
    same day — an owner reading this is deciding whether to hand a stranger
    their keys. */
 const FEE = `${Math.round(FEE_RATE * 100)}%`;
-const ADV = `${Math.round(ADVANCE_RATE * 100)}%`;
-const BAL = `${100 - Math.round(ADVANCE_RATE * 100)}%`;
 
 const toc: Toc = [
   { id: "about", title: "About these terms" },
@@ -64,7 +61,7 @@ export default function Page() {
       summary={[
         <>We inspect homes, plots and cars you own but cannot get to, and send you the evidence. We are not a broker and take no commission on rent.</>,
         <>Nobody goes in until you confirm, and we never open cupboards, wardrobes, lockers, safes or drawers.</>,
-        <>You pay {ADV} when you book and the rest when the report is ready. Move or cancel free until the day before — the advance comes back to you.</>,
+        <>You pay the full price when you book. Move or cancel free until the day before — what you paid comes back to you.</>,
         <>Nothing is repaired without your yes on the exact amount. A repair is Urban Company&apos;s price for the same service plus {FEE} — and no fee at all on repairs your Care+ cover pays for.</>,
         <>If we damage something while we are inside, we repair or replace it at our cost — up to {inr(damageCover.perVisit)} for any one visit.</>,
         <>Your photos and recordings are yours and never sold. Recordings are deleted after 90 days unless you ask us to keep them.</>,
@@ -72,7 +69,7 @@ export default function Page() {
     >
       <Clause id="about" n={1} title="About these terms">
         <p>
-          These Terms of Service (&quot;<b>Terms</b>&quot;) are an agreement between you and {site.company}, {site.address} (&quot;<b>StillYours</b>&quot;, &quot;<b>we</b>&quot;, &quot;<b>us</b>&quot;).
+          These Terms of Service (&quot;<b>Terms</b>&quot;) are an agreement between you and {site.operator}, who runs {site.company} from {site.address} (&quot;<b>StillYours</b>&quot;, &quot;<b>we</b>&quot;, &quot;<b>us</b>&quot;).
           They apply to our website at stillyours.in, our owner and inspector apps, and every service we provide through them (together, the &quot;<b>Service</b>&quot;).
         </p>
         <p>
@@ -121,7 +118,7 @@ export default function Page() {
           <>Please lock away cash, jewellery, documents and valuables before any visit.</>,
           <>Tell us in advance about anything that could make the property unsafe — pets, exposed wiring, a weak floor or roof, gas, pests. We may decline to enter, or stop a visit, if it is not safe.</>,
           <>Keep the map pin for each property accurate. The inspector checks in at the door, and a check-in more than {CHECKIN_RADIUS_M} metres from the pin needs a written reason that is shown on your report.</>,
-          <>If we arrive in the booked window and cannot get in for reasons within your control, the inspector waits at least 30 minutes. After that the visit counts as attempted — you can rebook, and the advance for the attempted visit is not refunded.</>,
+          <>If we arrive in the booked window and cannot get in for reasons within your control, the inspector waits at least 30 minutes. After that the visit counts as attempted — you can rebook, and what was paid for the attempted visit is not refunded.</>,
         ]} />
       </Clause>
 
@@ -140,7 +137,7 @@ export default function Page() {
       <Clause id="booking" n={7} title="Booking">
         <Points n={7} items={[
           <>You can book from {LEAD_DAYS} days ahead up to {WINDOW_DAYS} days ahead, in the time windows shown in the app. Times are Indian Standard Time.</>,
-          <>A booking is confirmed when its {ADV} advance is paid. Until then it is not offered to any inspector. A free launch-offer inspection with nothing added is confirmed straight away.</>,
+          <>A booking is confirmed when it is paid. Until then it is not offered to any inspector. A free launch-offer inspection with nothing added is confirmed straight away.</>,
           <>A yearly plan books its visits across the year when you buy it. You can move any of them.</>,
           <>We assign a verified inspector for the day. If the assigned inspector cannot make it, we assign another and tell you.</>,
         ]} />
@@ -149,8 +146,8 @@ export default function Page() {
       <Clause id="payment" n={8} title="Prices and payment">
         <Points n={8} items={[
           <>Prices are shown on our <Link href="/pricing">pricing page</Link> and in the app before you book, in Indian rupees, inclusive of applicable taxes. The price you see when you book is the price you pay for that booking.</>,
-          <><b>Visits:</b> {ADV} of the price is paid when you book. The remaining {BAL} is due when the report is ready. Until it is paid you can see the health score and how much was flagged; the full report — photos, video, notes and repair prices — opens once it is paid.</>,
-          <><b>Plans:</b> {ADV} of the year&apos;s price is paid when you book, and the rest when the first visit&apos;s report is ready. The plan year starts with that first report.</>,
+          <><b>Visits:</b> the full price is paid when you book. Nothing more is due when the report is ready — it opens as soon as it is.</>,
+          <><b>Plans:</b> the year&apos;s price is paid in full when you book. The plan year starts with the first visit&apos;s report.</>,
           <><b>Repairs:</b> paid in full when you approve them. See clause 10.</>,
           <>Payments are processed by Razorpay by card, UPI or net banking. We never see or store your card or bank details.</>,
           <>While an amount is overdue, we may pause new bookings on your account until it is paid.</>,
@@ -159,7 +156,7 @@ export default function Page() {
 
       <Clause id="cancel" n={9} title="Cancellations and refunds">
         <p>
-          You can move or cancel a visit free of charge until the day before it, and the advance comes back to the payment method you used.
+          You can move or cancel a visit free of charge until the day before it, and what you paid comes back to the payment method you used.
           On the day of the visit it can no longer be moved or cancelled.
           The full rules — visits, plans, repairs, and what happens if we are the ones who cannot make it — are in our <Link href="/refunds">Refund &amp; Cancellation Policy</Link>.
         </p>
@@ -239,7 +236,7 @@ export default function Page() {
 
       <Clause id="closing" n={17} title="Suspension and closing your account">
         <Points n={17} items={[
-          <>You can close your account from Account in the app at any time, except on the day of a booked visit or while one is under way. Visits not yet due are cancelled, and advances on them are refunded under the Refund &amp; Cancellation Policy.</>,
+          <>You can close your account from Account in the app at any time, except on the day of a booked visit or while one is under way. Visits not yet due are cancelled, and what was paid for them is refunded under the Refund &amp; Cancellation Policy.</>,
           <>We may suspend or close an account for serious or repeated breach of these Terms, for non-payment, or where required by law. Where we can, we tell you first and give you a chance to put things right.</>,
         ]} />
       </Clause>

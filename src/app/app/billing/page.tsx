@@ -24,11 +24,11 @@ export default async function Page() {
       <PageHead
         eyebrow="Money, plainly"
         title="Billing"
-        lede="25% when you book, the rest when the report is ready. A repair is paid when you approve it — never before."
+        lede="A visit is paid in full when you book. A repair is paid when you approve it — never before."
       />
 
       {all.length === 0 && toConfirm.length === 0 ? (
-        <Panel><Empty icon={CreditCard} title="Nothing billed yet." body="Book a visit and its 25% advance shows here. Your first inspection under the launch offer is free." /></Panel>
+        <Panel><Empty icon={CreditCard} title="Nothing billed yet." body="Book a visit and its payment shows here. Your first inspection under the launch offer is free." /></Panel>
       ) : (
         <div className="grid gap-4">
           <Reveal>
@@ -42,13 +42,13 @@ export default async function Page() {
           {toConfirm.length > 0 && (
             <Reveal delay={0.03}>
               <Panel>
-                <PanelHead title="To confirm a booking" meta="25% now — nobody is sent until it is paid" />
+                <PanelHead title="To confirm a booking" meta="Nobody is sent until it is paid" />
                 <ul className="divide-y divide-line">
                   {toConfirm.map((v) => (
                     <li key={v.id} className="flex flex-wrap items-center gap-4 px-5 py-4">
                       <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-warn-soft text-warn"><IndianRupee size={16} /></span>
                       <Link href={`/app/visits/${v.id}`} className="grow basis-[15rem]">
-                        <div className="truncate text-[14.5px] font-medium">Advance 25% · {v.lines[0]?.k ?? "Visit"}</div>
+                        <div className="truncate text-[14.5px] font-medium">{v.lines[0]?.k ?? "Visit"}</div>
                         <div className="t-small mt-0.5 truncate font-mono">{v.ref} · {label(v.propertyId)} · {fmtDayDate(v.scheduledFor)}</div>
                       </Link>
                       <span className="shrink-0 text-[17px] font-medium tabular-nums">{money(v.advanceInr)}</span>
@@ -79,7 +79,7 @@ export default async function Page() {
                   ))}
                 </ul>
                 <div className="t-small grid gap-1.5 border-t border-line px-5 py-3.5 leading-relaxed">
-                  <p>Payments go through Razorpay — card, UPI or net banking — and show here as paid the moment they go through. A report&apos;s balance opens the full report as soon as it is paid.</p>
+                  <p>Payments go through Razorpay — card, UPI or net banking — and show here as paid the moment they go through.</p>
                   <p>Paying from abroad and it will not go through? <Link href="/app/help" className="font-medium text-accent underline underline-offset-2">Write to us</Link> and we send bank details.</p>
                 </div>
               </Panel>

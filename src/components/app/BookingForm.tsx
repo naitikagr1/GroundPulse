@@ -259,7 +259,7 @@ export function BookingForm({
                             {p.popular && !plan && <span className="chip chip-accent">Most chosen</span>}
                             {offerOpen && p.id === "one-time" && property && qualifies(property) && <span className="chip chip-pass">Free for you</span>}
                           </div>
-                          <p className="t-small mt-1 leading-snug">{plan ? "On top of your plan's inspections — 25% when you book." : p.tagline}</p>
+                          <p className="t-small mt-1 leading-snug">{plan ? "On top of your plan's inspections — paid when you book." : p.tagline}</p>
                         </div>
                         <div className="shrink-0 text-right">
                           <div className="text-[17px] font-medium tabular-nums">{offerOpen && p.id === "one-time" && property && qualifies(property) ? <><span className="mr-1 text-[14px] font-normal text-text-3 line-through">{inr(price)}</span>free</> : inr(price)}</div>
@@ -398,8 +398,7 @@ export function BookingForm({
           </p>
           {q.total > 0 && (
             <div className="mt-3 grid gap-1 rounded-[12px] bg-paper px-3.5 py-3 text-[13px] tabular-nums">
-              <div className="flex justify-between font-medium"><span>Pay now to confirm · 25%</span><span>{inr(advanceOf(q.total))}</span></div>
-              <div className="flex justify-between text-text-2"><span>When the report is ready · 75%</span><span>{inr(q.total - advanceOf(q.total))}</span></div>
+              <div className="flex justify-between font-medium"><span>{q.recurring ? "Pay now — the whole year, nothing more later" : "Pay now — nothing more after the visit"}</span><span>{inr(advanceOf(q.total))}</span></div>
             </div>
           )}
 
@@ -415,8 +414,8 @@ export function BookingForm({
             {q.total === 0
               ? "Nothing to pay. You can move or cancel it free until the day before."
               : q.recurring
-                ? "25% of the plan now, the rest when the first report is ready — the full report opens once it is paid. Move or cancel any visit free until the day before; a cancelled advance is refunded."
-                : "25% now, the rest when the report is ready — the full report opens once it is paid. Move or cancel free until the day before; a cancelled advance is refunded."}
+                ? "The whole year is paid now. Move any visit free until the day before, and cancel the plan before its first visit for a full refund."
+                : "The full price is paid now — nothing more after the visit. Move or cancel free until the day before; a cancelled visit is refunded in full."}
           </p>
         </div>
         {welcome && <Link href="/app" className="t-small mt-3 block text-center underline underline-offset-4">Skip for now — I will book later</Link>}

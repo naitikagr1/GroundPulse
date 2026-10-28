@@ -91,7 +91,7 @@ export default async function Page({ params }: PageProps<"/app/reports/[id]">) {
                 {issues.length ? ` and the ${issues.length} ${issues.length === 1 ? "thing" : "things"} flagged — each with its repair price.` : " and the full checklist."}
               </p>
               <PayButton purpose="invoice" refId={balance.id} amount={balance.amountInr} label={`Pay ${money(balance.amountInr)} and open the report`} className="mt-5" />
-              <p className="mt-3 text-[12px] leading-snug text-white/50">{balance.ref} · the 25% you paid when booking is already counted.</p>
+              <p className="mt-3 text-[12px] leading-snug text-white/50">{balance.ref} · what you paid when booking is already counted.</p>
             </div>
           ) : (
           <div className="grid gap-4">

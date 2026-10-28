@@ -134,8 +134,8 @@ export function quote(q: QuoteInput): Quote {
   return { lines, total, saved, recurring: buyingPlan, period: buyingPlan ? "for the year" : q.plan ? "on your plan" : "one visit" };
 }
 
-/** 25% of a booking is paid up front; the rest when the report is ready. */
-export const ADVANCE_RATE = 0.25;
+/** A booking is paid in full when it is made — nothing is left for the report. */
+export const ADVANCE_RATE = 1;
 export const advanceOf = (total: number) => (total > 0 ? Math.round(total * ADVANCE_RATE) : 0);
 
 /* Slots an inspector can actually be given. Deliberately wide — the

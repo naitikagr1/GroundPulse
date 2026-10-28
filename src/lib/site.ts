@@ -7,7 +7,9 @@ export const site = {
   contactEmail: "stillyours.care@gmail.com",
   instagram: "https://www.instagram.com/stillyours.in",
   instagramHandle: "@stillyours.in",
-  company: "Still Yours Technologies Pvt. Ltd. (registration in progress)",
+  company: "StillYours",
+  /** who runs it until the company is registered — the name Razorpay knows */
+  operator: "Naitik Agrawal",
   address: "HSR Layout, Bengaluru 560102",
   founders: [
     {

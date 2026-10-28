@@ -61,14 +61,14 @@ export default async function Page({ params, searchParams }: PageProps<"/app/vis
     : quote({ kind: v.kind, planId: v.planId, size: p.size, tierId: v.tierId, addOns: v.addOns, founding: v.founding, rooms: p.rooms }).lines;
   const costMeta = v.founding ? "Free · launch offer"
     : invoice ? (invoice.status === "paid" ? "Paid" : invoice.status === "due" ? "Billed · due" : invoice.status === "refund_due" ? "Being refunded" : "Refunded")
-    : cancelled ? (advance ? "Advance being refunded" : "Nothing charged")
+    : cancelled ? (advance ? "Being refunded" : "Nothing charged")
     : v.amountInr === 0 ? "On your plan"
-    : unpaid ? "25% due to confirm"
-    : advance ? "25% paid · 75% when the report is ready"
+    : unpaid ? "Due to confirm"
+    : advance ? (advance.amountInr < v.amountInr ? "Part paid · the rest when the report is ready" : "Paid")
     : "Billed after the visit";
 
   const cancelNote = [
-    v.founding ? "Your free inspection comes back to you." : advance?.status === "paid" ? `The ${money(advance.amountInr)} advance goes back to the card or UPI it came from.` : "Nothing is charged.",
+    v.founding ? "Your free inspection comes back to you." : advance?.status === "paid" ? `The ${money(advance.amountInr)} you paid goes back to the card or UPI it came from.` : "Nothing is charged.",
     subscription && subscription.status === "pending" && subscription.startedByVisitId === v.id ? `This is the visit that starts ${planName(subscription.planId)} — cancelling it cancels the plan and the rest of its booked visits, and nothing is billed.` : "",
     v.usesPlan && !(subscription?.startedByVisitId === v.id && subscription.status === "pending") ? "The plan inspection goes back on your plan to book another day." : "",
   ].filter(Boolean).join(" ");
@@ -110,13 +110,13 @@ export default async function Page({ params, searchParams }: PageProps<"/app/vis
         </Reveal>
       )}
 
-      {/* booked, not yet confirmed: the 25% */}
+      {/* booked, not yet confirmed: the payment */}
       {unpaid && (
         <Reveal className="mb-4">
           <div className="card grid gap-3 border border-warn/30 bg-warn-soft p-5 sm:grid-cols-[1fr_auto] sm:items-center">
             <div>
               <div className="text-[15.5px] font-semibold">Pay {money(v.advanceInr)} to confirm this visit</div>
-              <p className="t-small mt-1 leading-snug">25% now. The other {money(Math.max(0, v.amountInr - v.advanceInr))} is due when the report is ready — the full report opens once it is paid. Nobody is sent until the advance is in.</p>
+              <p className="t-small mt-1 leading-snug">{v.advanceInr < v.amountInr ? <>The other {money(v.amountInr - v.advanceInr)} is due when the report is ready.</> : <>That is the full price — nothing more is due after the visit.</>} Nobody is sent until it is paid.</p>
             </div>
             <PayButton purpose="advance" refId={v.id} amount={v.advanceInr} autoStart={sp.pay === "1"} className="sm:min-w-[220px]" />
           </div>

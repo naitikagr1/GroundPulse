@@ -44,7 +44,7 @@ export default function Page() {
     >
       <Clause id="who" n={1} title="Who we are">
         <p>
-          {site.company}, {site.address} (&quot;StillYours&quot;, &quot;we&quot;) runs stillyours.in and the StillYours owner and inspector apps.
+          {site.company} is run by {site.operator}, {site.address} (&quot;StillYours&quot;, &quot;we&quot;). We run stillyours.in and the StillYours owner and inspector apps.
           For personal data you give us, we are the data fiduciary under the Digital Personal Data Protection Act, 2023 (&quot;DPDP Act&quot;).
           This policy applies alongside our <Link href="/terms">Terms of Service</Link>.
         </p>

@@ -14,7 +14,7 @@ export const organizationLd = {
   "@type": "ProfessionalService",
   "@id": `${SITE_URL}/#organization`,
   name: site.name,
-  legalName: site.company.replace(" (registration in progress)", ""),
+  legalName: site.company,
   slogan: site.tagline,
   url: SITE_URL,
   email: site.contactEmail,

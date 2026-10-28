@@ -22,8 +22,9 @@ import type { DB, Issue, Visit } from "@/lib/types";
 const kindLabel = (v: Visit) => (v.kind === "cleaning" ? "Cleaning" : v.kind === "plot" ? "Plot visit" : "Inspection");
 
 /** A report reaches the owner. The visit has happened, so this is when the
-    rest of it is billed — the 75% after the 25% taken at booking — and when
-    a plan bought with it actually starts its year. */
+    anything booking did not take is billed (only older bookings, made
+    when a quarter was paid up front) — and when a plan bought with it
+    actually starts its year. */
 export function deliverReport(d: DB, visitId: string, opts: { released?: boolean } = {}) {
   const v = d.visits.find((x) => x.id === visitId);
   if (!v?.reportId) return;
@@ -52,8 +53,8 @@ export function deliverReport(d: DB, visitId: string, opts: { released?: boolean
     });
   }
 
-  /* The rest of the money is due now — 75% when 25% was paid up front.
-     Until it is paid the owner sees the score and how much was flagged,
+  /* Whatever booking did not take is due now — only older bookings, made
+     when a quarter was paid up front, have any. Until it is paid the owner sees the score and how much was flagged,
      and the full report opens the moment it is. */
   const advancePaid = d.invoices.filter((i) => i.visitId === v.id && i.stage === "advance" && i.status === "paid").reduce((n, i) => n + i.amountInr, 0);
   const balance = Math.max(0, v.amountInr - advancePaid);
@@ -61,7 +62,7 @@ export function deliverReport(d: DB, visitId: string, opts: { released?: boolean
     d.invoices.push({
       id: uid(), ref: invoiceRef(d), ownerId: v.ownerId, propertyId: v.propertyId, visitId: v.id,
       issueId: null, subscriptionId: startsPlan ? sub!.id : null,
-      title: `${advancePaid ? "Balance 75% · " : ""}${v.lines[0]?.k ?? kindLabel(v)} · ${p.label}`,
+      title: `${advancePaid ? "Balance · " : ""}${v.lines[0]?.k ?? kindLabel(v)} · ${p.label}`,
       amountInr: balance, status: "due", method: "", createdAt: now(), stage: "balance",
     });
   }

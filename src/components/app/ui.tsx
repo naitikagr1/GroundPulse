@@ -38,7 +38,7 @@ export function Stat({ n, l, tone, className }: { n: React.ReactNode; l: string;
 /* One vocabulary for visit state across the dashboard, the list and the
    visit page, so a status never means two things in two places. */
 const VISIT_LOOK: Record<VisitStatus, { label: string; chip: string; live?: boolean }> = {
-  unpaid: { label: "Pay 25% to confirm", chip: "chip-warn" },
+  unpaid: { label: "Pay to confirm", chip: "chip-warn" },
   scheduled: { label: "Scheduled", chip: "" },
   assigned: { label: "Inspector assigned", chip: "chip-accent" },
   en_route: { label: "On the way", chip: "chip-warn", live: true },

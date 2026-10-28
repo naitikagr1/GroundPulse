@@ -6,7 +6,7 @@ export const promises = [
   ["Every claim here is checkable", "Name, photo, OTP, GPS, video, audit log. Not adjectives — things you can open in your own report and verify."],
   ["Watch it live", "Video call at the start and end of every visit, if you want it."],
   ["Nobody earns from flagging", "Inspectors are paid a flat fee. Repairs go to a different professional at Urban Company's price for the same job + 15% — none under Care+ — which you approve."],
-  ["Change your mind", "Move or cancel a visit free until the day before — the 25% advance comes back on its own. A yearly plan cancels in full before its first visit."],
+  ["Change your mind", "Move or cancel a visit free until the day before — what you paid comes back on its own. A yearly plan cancels in full before its first visit."],
   ["We fix what we damage", `If we break something during a visit, we repair or replace it at our cost — up to ${damageCover.words} a visit.`],
   ["No brokerage, nothing hidden", "We never find tenants. On repairs we charge 15% you see before you approve. Inspection, proof and approved repairs are the whole product."],
   ["Your data stays yours", "Videos and photos on private, expiring links, never sold. Recordings are deleted after 90 days, and closing your account removes your name and number from it."],

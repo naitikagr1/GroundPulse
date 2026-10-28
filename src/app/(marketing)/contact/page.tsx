@@ -22,7 +22,7 @@ export default function Page() {
           { k: "Email", v: <a href={`mailto:${site.contactEmail}`} className="text-accent underline underline-offset-2">{site.contactEmail}</a>, n: "Bookings, visits, bills, anything at all." },
           { k: "In the app", v: "Help, in the owner app", n: "Kept with the visit it is about, so nothing is lost." },
           { k: "Instagram", v: <a href={site.instagram} target="_blank" rel="noopener noreferrer" className="text-accent underline underline-offset-2">{site.instagramHandle}</a>, n: "Messages open." },
-          { k: "Registered address", v: site.address, n: site.company },
+          { k: "Address", v: site.address, n: `${site.company} · run by ${site.operator}` },
         ].map((c) => (
           <div key={c.k} className="card border border-line bg-white p-5">
             <div className="t-label">{c.k}</div>

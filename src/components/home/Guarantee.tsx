@@ -5,7 +5,7 @@ import { damageCover } from "@/lib/pricing";
 
 const guarantees = [
   { I: ThumbsUp, t: "You approve every rupee", b: "No repair, no cleaning, no part is bought without your yes on the exact amount. A flagged issue is a question, not an invoice." },
-  { I: RotateCcw, t: "Cancel free until the day before", b: "Move or cancel any visit up to the day before and your 25% advance comes back automatically. No questions and no retention call." },
+  { I: RotateCcw, t: "Cancel free until the day before", b: "Move or cancel any visit up to the day before and what you paid comes back automatically. No questions and no retention call." },
   { I: ShieldCheck, t: "We fix what we damage", b: `If we break something during a visit, we repair or replace it at our cost — up to ${damageCover.words} a visit. We never open cupboards, wardrobes or lockers — keep cash and jewellery locked away.` },
   { I: BadgeIndianRupee, t: "Never a rupee of commission", b: "We don't broker tenants and we don't mark up bills. The provider's quote + 15%, shown to you before you approve." },
 ];

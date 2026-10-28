@@ -50,7 +50,7 @@ export function allowanceLeft(s: Subscription) {
 /** One honest line about where the plan stands. */
 export function planStatus(s: Subscription): { label: string; tone: "accent" | "warn" | "fail" | ""; note: string } {
   const st = effectiveStatus(s);
-  if (st === "pending") return { label: "Starts with its first visit", tone: "warn", note: "25% paid when booked. The year starts, and the rest is due, when the first report is ready." };
+  if (st === "pending") return { label: "Starts with its first visit", tone: "warn", note: "Paid when booked. The year starts when the first report is ready." };
   if (st === "cancelled") return { label: "Cancelled", tone: "fail", note: "Nothing more is booked or billed on it." };
   if (st === "lapsed") return { label: `Ended ${s.renewsAt ? fmtDate(s.renewsAt, { year: true }) : ""}`.trim(), tone: "fail", note: "Book a plan again from the booking screen to start another year." };
   return s.autoRenew

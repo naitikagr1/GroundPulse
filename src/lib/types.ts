@@ -143,7 +143,7 @@ export type Subscription = {
 
 /* A visit walks this line, and every screen in the app reads from it. */
 export type VisitStatus =
-  | "unpaid"      // booked, waiting on the 25% advance — not on the board yet
+  | "unpaid"      // booked, waiting to be paid — not on the board yet
   | "scheduled"   // confirmed, nobody assigned yet
   | "assigned"    // an inspector has it
   | "en_route"    // they are on the way
@@ -222,7 +222,7 @@ export type Visit = {
   startedAt: string | null;
   endedAt: string | null;
   reportId: string | null;
-  /** the 25% taken at booking; 0 when nothing was due up front */
+  /** what was taken at booking — the full price (a quarter on older bookings); 0 when nothing was due up front */
   advanceInr: number;
   /** ₹200 for every hour past two on site — paid by us, not the owner */
   overtimeInr: number;
