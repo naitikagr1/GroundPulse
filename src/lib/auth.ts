@@ -6,9 +6,9 @@
    for 30 days — long, because the whole point is opening the app at
    11 PM in another country without hunting for a password.
 
-   Codes are sent by SMS through Fast2SMS. On a laptop no SMS is sent —
-   the code is returned to the caller and shown on screen, clearly
-   marked — unless SMS_IN_DEV=1.
+   Codes are sent by SMS through MSG91 (Fast2SMS when MSG91 is not set
+   up). On a laptop no SMS is sent — the code is returned to the caller
+   and shown on screen, clearly marked — unless SMS_IN_DEV=1.
    ════════════════════════════════════════════════════════════════ */
 
 import { createHash, createHmac, randomBytes, scrypt, timingSafeEqual, type ScryptOptions } from "node:crypto";
@@ -123,22 +123,63 @@ function unseal(token: string): SessionPayload | null {
   return payload;
 }
 
-/* Sign-in codes go out through Fast2SMS's OTP route, which reaches Indian
-   mobiles only. FAST2SMS_API_KEY holds the key — in the environment, never
-   in this repository.
+/* Sign-in codes go out by SMS to Indian mobiles only — through MSG91's
+   OTP widget when MSG91_WIDGET_ID and MSG91_TOKEN_AUTH are set, otherwise
+   through Fast2SMS's OTP route (FAST2SMS_API_KEY). The keys live in the
+   environment, never in this repository.
+
+   MSG91's widget makes the code and checks it itself, and its default
+   template needs no DLT registration — Fast2SMS refuses its OTP route
+   until the website and an Aadhaar are verified. The widget has to be set
+   for mobile numbers over SMS, six digits, Mobile Integration on and
+   captcha off: this server is the only thing that talks to it.
 
    A laptop never sends a real SMS unless SMS_IN_DEV=1: the demo accounts
    use made-up numbers that belong to real people somewhere. */
 type SmsResult = "sent" | "off" | "abroad" | "failed";
 
-async function sendSms(phone: string, code: string): Promise<SmsResult> {
-  const key = process.env.FAST2SMS_API_KEY?.trim();
-  if (!key) return "off";
+const msg91Widget = () => {
+  const widgetId = process.env.MSG91_WIDGET_ID?.trim();
+  const tokenAuth = process.env.MSG91_TOKEN_AUTH?.trim();
+  return widgetId && tokenAuth ? { widgetId, tokenAuth } : null;
+};
+
+/** Who would carry a code to this number — or why nobody will. */
+function smsRoute(phone: string): "msg91" | "fast2sms" | "off" | "abroad" {
+  const provider = msg91Widget() ? "msg91" : process.env.FAST2SMS_API_KEY?.trim() ? "fast2sms" : null;
+  if (!provider) return "off";
   if (process.env.NODE_ENV !== "production" && process.env.SMS_IN_DEV !== "1") return "off";
   /* The demo accounts' 90000000xx numbers are made up, which means they are
      somebody's real phone. Never text them, even with SMS_IN_DEV on. */
   if (/^90000000\d\d$/.test(phone)) return "off";
   if (!isIndianMobile(phone)) return "abroad";
+  return provider;
+}
+
+/** One call to MSG91's widget. `reached` is false when MSG91 could not be
+    asked at all — not the same as MSG91 saying no. */
+async function msg91(path: "sendOtpMobile" | "verifyOtp", body: Record<string, string>) {
+  const w = msg91Widget()!;
+  try {
+    const res = await fetch(`https://control.msg91.com/api/v5/widget/${path}`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ widgetId: w.widgetId, tokenAuth: w.tokenAuth, ...body }),
+      cache: "no-store",
+    });
+    const j = (await res.json().catch(() => null)) as { type?: string; message?: unknown } | null;
+    const message = typeof j?.message === "string" ? j.message : "";
+    if (res.ok && j?.type === "success" && message) return { reached: true, ok: true, message };
+    console.error(`[sms] MSG91 ${path} refused`, res.status, j?.message);
+    return { reached: true, ok: false, message };
+  } catch (err) {
+    console.error(`[sms] MSG91 ${path} could not be reached`, err);
+    return { reached: false, ok: false, message: "" };
+  }
+}
+
+async function fast2sms(phone: string, code: string): Promise<SmsResult> {
+  const key = process.env.FAST2SMS_API_KEY!.trim();
   try {
     const res = await fetch("https://www.fast2sms.com/dev/bulkV2", {
       method: "POST",
@@ -165,7 +206,9 @@ async function sendSms(phone: string, code: string): Promise<SmsResult> {
    exact; on a serverless host it is per instance until the store is
    Postgres — still a brake, and exact the day that lands. */
 type Purpose = Otp["purpose"];
-type OtpCookie = { p: string; h: string; e: number; u?: Purpose };
+/** `r` is MSG91's request id when MSG91 sent the code — then MSG91, not
+    `h`, says whether a code is right. */
+type OtpCookie = { p: string; h: string; e: number; u?: Purpose; r?: string };
 const otpHash = (purpose: Purpose, phone: string, code: string) => sign(`${purpose}:${phone}:${code}`);
 
 export type StartResult =
@@ -193,8 +236,20 @@ export async function startOtp(cc: string, rawPhone: string, purpose: Purpose = 
     return { ok: false, error: "Too many codes asked for from here. Try again in fifteen minutes.", phone };
   }
 
-  const code = String(Math.floor(100000 + Math.random() * 900000));
-  const hash = otpHash(purpose, phone, code);
+  /* Sent first: with MSG91 the request id it hands back is what the code
+     is checked against later. */
+  const route = smsRoute(phone);
+  let code = String(Math.floor(100000 + Math.random() * 900000));
+  let reqId: string | undefined;
+  let sms: SmsResult;
+  if (route === "msg91") {
+    const sent = await msg91("sendOtpMobile", { identifier: `91${phone}` });
+    sms = sent.ok ? "sent" : "failed";
+    if (sent.ok) [reqId, code] = [sent.message, ""];
+  } else {
+    sms = route === "fast2sms" ? await fast2sms(phone, code) : route;
+  }
+  const hash = otpHash(purpose, phone, reqId ? `msg91:${reqId}` : code);
   const expiresAt = t + OTP_MINUTES * 60_000;
 
   await mutate((s) => {
@@ -202,17 +257,6 @@ export async function startOtp(cc: string, rawPhone: string, purpose: Purpose = 
     s.otps.push({ phone, purpose, hash, expiresAt: new Date(expiresAt).toISOString(), attempts: 0, sends: [...recent, now()] });
   });
 
-  const body = b64(JSON.stringify({ p: phone, h: hash, e: expiresAt, u: purpose } satisfies OtpCookie));
-  const jar = await cookies();
-  jar.set(OTP_COOKIE, `${body}.${sign(body)}`, {
-    httpOnly: true,
-    sameSite: "lax",
-    path: "/",
-    secure: process.env.NODE_ENV === "production",
-    maxAge: OTP_MINUTES * 60,
-  });
-
-  const sms = await sendSms(phone, code);
   /* Showing the code on screen is only ever for a laptop. In production a
      code that could not be sent is a failure, never a code handed to
      whoever typed the number. */
@@ -225,6 +269,16 @@ export async function startOtp(cc: string, rawPhone: string, purpose: Purpose = 
       phone,
     };
   }
+
+  const body = b64(JSON.stringify({ p: phone, h: hash, e: expiresAt, u: purpose, r: reqId } satisfies OtpCookie));
+  const jar = await cookies();
+  jar.set(OTP_COOKIE, `${body}.${sign(body)}`, {
+    httpOnly: true,
+    sameSite: "lax",
+    path: "/",
+    secure: process.env.NODE_ENV === "production",
+    maxAge: OTP_MINUTES * 60,
+  });
   return { ok: true, phone, devCode: sms === "sent" ? null : code };
 }
 
@@ -243,7 +297,16 @@ async function checkOtp(rawPhone: string, rawCode: string, purpose: Purpose): Pr
   const row = d.otps.find((o) => o.phone === phone && o.purpose === purpose && o.hash === otp.h);
   if (row && row.attempts >= MAX_ATTEMPTS) return { ok: false, error: "Too many wrong tries on that code. Send yourself a new one." };
 
-  if (otp.h !== otpHash(purpose, phone, code)) {
+  /* MSG91 made this code, so only MSG91 can say whether it is right. */
+  let right = otp.h === otpHash(purpose, phone, code);
+  if (otp.r) {
+    const checked = await msg91("verifyOtp", { reqId: otp.r, otp: code });
+    if (!checked.reached) return { ok: false, error: "We could not check the code just now. Try again in a minute." };
+    if (!checked.ok && /expire/i.test(checked.message)) return { ok: false, error: "That code has expired. Send a new one." };
+    right = checked.ok;
+  }
+
+  if (!right) {
     const attempts = await mutate((s) => {
       let r = s.otps.find((o) => o.phone === phone && o.purpose === purpose && o.hash === otp.h);
       if (!r) {

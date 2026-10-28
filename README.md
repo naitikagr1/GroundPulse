@@ -140,11 +140,13 @@ in the same bucket — it needs `CRON_SECRET` set in Vercel.
 
 ### Sign-in codes
 
-Codes go out by SMS through Fast2SMS's OTP route when `FAST2SMS_API_KEY` is
-set — Indian mobiles only; a number from abroad is told so. On a laptop no SMS
-is sent (the demo accounts use made-up numbers) and the code is shown on the
-sign-in screen instead, unless `SMS_IN_DEV=1`. See `sendSms` in
-`src/lib/auth.ts`.
+Codes go out by SMS through MSG91's OTP widget when `MSG91_WIDGET_ID` and
+`MSG91_TOKEN_AUTH` are set — MSG91 makes and checks the code, and its default
+template needs no DLT registration — or else through Fast2SMS's OTP route when
+`FAST2SMS_API_KEY` is set. Indian mobiles only; a number from abroad is told
+so. On a laptop no SMS is sent (the demo accounts use made-up numbers) and the
+code is shown on the sign-in screen instead, unless `SMS_IN_DEV=1`. See
+`smsRoute` in `src/lib/auth.ts`.
 
 ## Installing it on a phone
 
