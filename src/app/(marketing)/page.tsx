@@ -23,7 +23,7 @@ export default function Home() {
       <Relax />
       <Steps />
       <Timeline />
-      <Pricing />
+      <Pricing relax={false} />
       <MoreLinks />
       {/* warm tinted band */}
       <div className="sheet bg-beige pb-16 md:pb-24">
