@@ -16,7 +16,6 @@ import { promisify } from "node:util";
 import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { db, mutate, now, uid } from "@/lib/store";
-import { LIMIT } from "@/lib/offer";
 import { isAccountPhone, isIndianMobile, parsePhone, reachOn } from "@/lib/phone";
 import { canInspect, ensureInspector, mayInspect, NOT_ON_ROSTER } from "@/lib/roster";
 import { sweepMissed } from "@/lib/jobs";
@@ -283,11 +282,7 @@ export async function verifyOtp(rawPhone: string, rawCode: string, side: Side = 
   const user = await mutate((s) => {
     let u = s.users.find((x) => x.phone === phone);
     if (!u) {
-      /* The launch offer is the first ten owners, in the order they
-         arrive. Handing the number out here means it is decided once,
-         at sign-up, rather than re-counted on every screen. */
-      /* Only the inspector door creates an account here — never one of the
-         ten launch owners. */
+      /* Only the inspector door creates an account here. */
       u = {
         id: uid(), role: "owner", name: "", phone, email: "", livesIn: "",
         tz: "Asia/Kolkata", prefs: { sms: true, email: true },
@@ -369,7 +364,7 @@ export async function signInWithGoogle(g: { sub: string; email: string; name: st
       }
     }
     if (!u) {
-      u = newOwner(s.users, { name: g.name, email: g.email, googleSub: g.sub, emailVerifiedAt: now() });
+      u = newOwner({ name: g.name, email: g.email, googleSub: g.sub, emailVerifiedAt: now() });
       s.users.push(u);
     }
     return u;
@@ -385,11 +380,8 @@ export async function devSignInOwner(email: string) {
   const user = await mutate((s) => {
     let u = s.users.find((x) => x.email === email && !x.deletedAt);
     if (!u) {
-      u = {
-        id: uid(), role: "owner", name: "", phone: "", email, contactPhone: "", livesIn: "",
-        tz: "Asia/Kolkata", prefs: { sms: true, email: true }, createdAt: now(), onboardedAt: null,
-        foundingNo: null, freeVisitUsedAt: null, deletedAt: null,
-      };
+      /* the same account a real sign-up makes, launch-offer number included */
+      u = newOwner({ name: "", email });
       s.users.push(u);
     }
     return u;
@@ -398,15 +390,14 @@ export async function devSignInOwner(email: string) {
   return user;
 }
 
-/** A new owner account. The first ten owners are the launch cohort,
-    however they signed up. */
-function newOwner(users: User[], f: Pick<User, "name" | "email"> & Partial<User>): User {
-  const taken = users.filter((x) => x.foundingNo !== null).length;
+/** A new owner account. The launch offer is not handed out here — a
+    place is taken when the free inspection is booked (lib/offer). */
+function newOwner(f: Pick<User, "name" | "email"> & Partial<User>): User {
   return {
     id: uid(), role: "owner", phone: "", contactPhone: "", livesIn: "",
     tz: "Asia/Kolkata", prefs: { sms: true, email: true },
     createdAt: now(), onboardedAt: null,
-    foundingNo: taken < LIMIT ? taken + 1 : null,
+    foundingNo: null,
     freeVisitUsedAt: null, deletedAt: null,
     ...f,
   };
@@ -516,7 +507,7 @@ export async function signUpWithPassword(rawEmail: string, password: string): Pr
   const made = await mutate((s) => {
     const had = s.users.find((x) => x.email === email && !x.deletedAt && x.role !== "inspector");
     if (had) return null;
-    const u = newOwner(s.users, { name: "", email, passwordHash: hash, emailVerifiedAt: null, authVersion: 0 });
+    const u = newOwner({ name: "", email, passwordHash: hash, emailVerifiedAt: null, authVersion: 0 });
     s.users.push(u);
     return u;
   });

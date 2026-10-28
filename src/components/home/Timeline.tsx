@@ -8,6 +8,7 @@ import { FloorPlan } from "@/components/ui/FloorPlan";
 import { Keys } from "@/components/ui/Keys";
 import { cn } from "@/lib/cn";
 import { EASE, viewportOnce } from "@/lib/motion";
+import { START, START_LABEL } from "@/lib/start";
 
 type Item = { t: string; when?: string; kind?: "tint" | "white" | "hatch" | "note"; h?: number };
 
@@ -77,7 +78,7 @@ export function Timeline() {
             <p className="text-[20px] font-medium text-text-2 sm:text-[24px]">Still Yours lets you stay away with</p>
             <h2 id="timeline-title" className="t-1 mt-1">StillYours vs. the usual way</h2>
             <p className="t-lede mt-5 max-w-[40ch] text-text-2">A full report within the hour. You approve only what needs fixing. A verified pro does the rest — and shows you it's done.</p>
-            <Link href="/access" className="btn btn-accent mt-7">Join the waitlist</Link>
+            <Link href={START} className="btn btn-accent mt-7">{START_LABEL}</Link>
           </Reveal>
 
           {/* polaroid + keys */}

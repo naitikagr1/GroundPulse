@@ -55,10 +55,13 @@ export type User = {
   createdAt: string;
   /** owners who have not finished the welcome flow still see it */
   onboardedAt: string | null;
-  /** 1–10 for the launch cohort, null for everyone after them */
+  /** no longer handed out: the launch offer is counted from the free
+      inspections booked (lib/offer). Older rows keep what they had. */
   foundingNo: number | null;
   /** the offer is one free inspection per owner, so it is spent once */
   freeVisitUsedAt: string | null;
+  /** ops cancelled their free booking as not genuine: no free one again */
+  freeRevokedAt?: string | null;
   /** closed accounts keep their row — bills and reports keep their history —
       but everything personal on it is blanked */
   deletedAt: string | null;

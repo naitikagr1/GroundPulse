@@ -3,17 +3,19 @@ import { ArrowRight, Check, MessageCircle, Smartphone, Users } from "lucide-reac
 import { Reveal } from "@/components/ui/Reveal";
 import { PhoneMore } from "@/components/ui/PhoneMore";
 import { damageCover } from "@/lib/pricing";
+import { LIMIT } from "@/lib/offer";
+import { START, START_LABEL } from "@/lib/start";
 
 /**
- * Launch offer for the first ten owners.
+ * Launch offer for the first LIMIT owners (lib/offer).
  *
- * Remove this component — and the hero pill that links to #founding — once ten
- * owners have booked. There is deliberately no "spots left" counter: a counter
- * has to be kept accurate by hand, and a wrong one is worse than none.
+ * Remove this component — and the hero pill that links to #founding — once they
+ * have all booked. The public page shows no count; the owner app does, and it
+ * is worked out from the free inspections actually booked.
  */
 const terms = [
-  "For the first 10 owners — one free inspection per owner, not per visit",
-  "Homes up to 2 BHK, in Bengaluru",
+  `For the first ${LIMIT} owners — one free inspection per owner, not per visit`,
+  "Any home in Bengaluru, whatever its size",
   "One of the two of us who started StillYours does your visit in person — we are not sending anyone else",
   "The full 42-item check, photos and video of every room, and your report within the hour",
   "Your whole visit recorded on a body camera, start to finish — and you get the full video",
@@ -32,11 +34,11 @@ export function FoundingOffer() {
             <p className="text-[13px] font-medium uppercase tracking-[0.08em] text-white/55">Launch offer · Bengaluru</p>
             <h3 className="t-2 mt-3 max-w-[14ch]">Your first inspection is free.</h3>
             <p className="mt-4 max-w-[42ch] text-[15.5px] leading-relaxed text-white/75">
-              We&apos;re taking our first ten owners at no cost — and the two of us do these visits ourselves, so we learn the job
+              We&apos;re taking our first {LIMIT} owners at no cost — and the two of us do these visits ourselves, so we learn the job
               properly before anyone else ever walks into your home.
             </p>
-            <Link href="/access" className="btn btn-white mt-7">Join the waitlist <ArrowRight size={16} /></Link>
-            <p className="mt-3 text-[13px] text-white/50">The offer closes when ten owners have booked.</p>
+            <Link href={START} className="btn btn-white mt-7">{START_LABEL} <ArrowRight size={16} /></Link>
+            <p className="mt-3 text-[13px] text-white/50">The offer closes when {LIMIT} owners have booked.</p>
           </div>
 
           {/* one quiet list on a phone, a column of cards from sm up */}

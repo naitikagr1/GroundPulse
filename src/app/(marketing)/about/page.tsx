@@ -6,6 +6,7 @@ import { SectionHead } from "@/components/shared/SectionHead";
 import { Reveal } from "@/components/ui/Reveal";
 import { Founders } from "@/components/home/Founders";
 import { site } from "@/lib/site";
+import { START, START_LABEL } from "@/lib/start";
 
 export const metadata: Metadata = {
   title: "About us",
@@ -51,7 +52,7 @@ export default function Page() {
         lede="Still Yours checks on the homes, plots and cars people own but cannot get to — and sends back proof, not reassurance. We started it because our own families needed it."
       >
         <Reveal delay={0.1} className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-          <Link href="/access" className="btn btn-accent">Join the waitlist <ArrowRight size={16} /></Link>
+          <Link href={START} className="btn btn-accent">{START_LABEL} <ArrowRight size={16} /></Link>
           <Link href="/sample-report" className="btn btn-white">See a sample report</Link>
         </Reveal>
       </PageHero>
@@ -146,7 +147,7 @@ export default function Page() {
             <div className="mt-12 flex flex-col gap-4 border-t border-white/12 pt-8 sm:flex-row sm:items-center sm:justify-between">
               <p className="hand -rotate-2 text-[30px] leading-none text-white">Raj &amp; Naitik</p>
               <div className="flex flex-col gap-3 sm:flex-row">
-                <Link href="/access" className="btn btn-white">Join the waitlist <ArrowRight size={16} /></Link>
+                <Link href={START} className="btn btn-white">{START_LABEL} <ArrowRight size={16} /></Link>
                 <Link href="/contact" className="btn btn-line text-white">Talk to us</Link>
               </div>
             </div>

@@ -17,7 +17,8 @@ export function PropertyCard({ v }: { v: PropertyView }) {
   return (
     <Link href={`/app/properties/${p.id}` as Route} className="group card block overflow-hidden border border-line bg-white shadow-card transition duration-500 hover:-translate-y-0.5 hover:shadow-float">
       <div className="relative">
-        <EvidenceFrame variant={p.cover} id="" room={p.locality || p.city} time={lastReport ? fmtDate(lastReport.publishedAt) : "not yet visited"} tone={score === null ? undefined : score >= 70 ? "pass" : score >= 40 ? "attn" : "fail"} ratio="16 / 7" />
+        {/* the drawing, never a stock photo: a realistic room that is not their home would pass for it */}
+        <EvidenceFrame variant={p.cover} src={null} id="" room={p.locality || p.city} time={lastReport ? fmtDate(lastReport.publishedAt) : "not yet visited"} tone={score === null ? undefined : score >= 70 ? "pass" : score >= 40 ? "attn" : "fail"} ratio="16 / 7" />
         {liveVisit && (
           <span className="absolute left-3 top-3 inline-flex items-center gap-2 rounded-full bg-white/95 px-3 py-1.5 text-[11.5px] font-semibold shadow-card">
             <span className="ping relative h-[6px] w-[6px] rounded-full bg-accent text-accent" />

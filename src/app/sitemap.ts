@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { abs } from "@/lib/seo";
+import { APPS_LIVE } from "@/lib/flags";
 
 /* Priority reflects what we actually want ranked: the money pages first, the
    company pages last. changeFrequency is a hint, not a promise. */
@@ -12,7 +13,8 @@ const routes: [path: string, priority: number, changeFrequency: MetadataRoute.Si
   ["/how-it-works", 0.8, "monthly"],
   ["/sample-report", 0.7, "monthly"],
   ["/about", 0.6, "monthly"],
-  ["/access", 0.7, "monthly"],
+  /* the waitlist exists only until the apps are live */
+  ...(APPS_LIVE ? [] : [["/access", 0.7, "monthly"] as [string, number, "monthly"]]),
   ["/network", 0.6, "monthly"],
   ["/platform", 0.5, "monthly"],
   ["/terms", 0.4, "yearly"],

@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* opened from the home screen, as an app */
+@custom-variant standalone (@media (display-mode: standalone));
+
 /* ─────────────────────────────────────────────────────────────
    Still Yours — design tokens, taken from the mark itself.
    Forest #134027 · gold #E49C1A · cream ground #FCFAF0 · ink #23201D

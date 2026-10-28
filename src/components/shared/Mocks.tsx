@@ -4,6 +4,7 @@ import { BadgeCheck, Bell, Camera, Check, ChevronRight, Flag, MapPin, X } from "
 import { EvidenceFrame } from "@/components/ui/EvidenceFrame";
 import { HealthRing } from "@/components/ui/HealthRing";
 import { cn } from "@/lib/cn";
+import { BOX, SHOT } from "@/lib/photos";
 
 /* Small, white product mocks reused across pages. */
 
@@ -89,8 +90,8 @@ export function ReportMock() {
       </div>
       <div className="mt-3 grid grid-cols-4 gap-1.5">
         <EvidenceFrame variant="kitchen" dense tone="pass" id="0398" room="Kitchen" time="13:51" />
-        <EvidenceFrame variant="bathroom" dense id="0412" room="Bath" time="14:02" box={[38, 68, 30, 16]} boxLabel="Leak" />
-        <EvidenceFrame variant="bedroom" dense tone="attn" id="0406" room="Bed" time="13:57" box={[46, 30, 8, 14]} boxLabel="Lock" />
+        <EvidenceFrame variant="bathroom" src={SHOT.bathLeak} dense id="0412" room="Bath" time="14:02" box={BOX.bathLeak} boxLabel="Leak" />
+        <EvidenceFrame variant="bedroom" src={SHOT.bedroom} dense tone="attn" id="0406" room="Bed" time="13:57" box={BOX.bedroomLock} boxLabel="Lock" />
         <EvidenceFrame variant="balcony" dense tone="pass" id="0421" room="Balcony" time="14:11" />
       </div>
       <div className="mt-3 flex items-center justify-between rounded-[10px] border border-line px-3 py-2 text-[12px]"><span className="inline-flex items-center gap-1.5 text-text-2"><Bell size={11} /> Email + in-app notification sent</span><span className="chip chip-pass">Ready</span></div>
@@ -102,10 +103,10 @@ export function DecideMock() {
   return (
     <Card title="Issue · Water leakage" meta="#0917">
       <div className="grid grid-cols-2 gap-1.5">
-        <EvidenceFrame variant="bathroom" dense id="0412" room="Bathroom" time="14:02" box={[38, 68, 30, 16]} boxLabel="Leak" />
-        <EvidenceFrame variant="bathroom" dense id="0413" room="Close-up" time="14:03" box={[20, 40, 60, 40]} boxLabel="Moisture" />
+        <EvidenceFrame variant="bathroom" src={SHOT.bathLeak} dense id="0412" room="Bathroom" time="14:02" box={BOX.bathLeak} boxLabel="Leak" />
+        <EvidenceFrame variant="bathroom" src={SHOT.bathLeakClose} dense id="0413" room="Close-up" time="14:03" box={BOX.bathLeakClose} boxLabel="Moisture" />
       </div>
-      <p className="mt-3 text-[12.5px] leading-relaxed text-text-2">Slow drip from the trap under the sink. Cabinet base is damp with early swelling. Recommend replacing the trap and sealing.</p>
+      <p className="mt-3 text-[12.5px] leading-relaxed text-text-2">Slow drip from the trap joint under the basin — water is pooling on the floor and staining the tiles. Recommend replacing the trap and sealing.</p>
       <div className="mt-3 grid grid-cols-2 gap-1.5">
         <span className="inline-flex h-10 items-center justify-center gap-2 rounded-[10px] bg-accent text-[12.5px] font-semibold text-white"><Check size={13} /> Approve repair</span>
         <span className="inline-flex h-10 items-center justify-center gap-2 rounded-[10px] border border-line-2 text-[12.5px] font-semibold"><X size={13} /> Decline</span>
@@ -127,7 +128,7 @@ export function ResolveMock({ stage = 3 }: { stage?: number }) {
         <span className="chip chip-pass">Done</span>
       </div>
       <div className="mt-2 grid grid-cols-[1fr_1.5fr] gap-1.5">
-        <EvidenceFrame variant="bathroom" dense id="AFTER_01" room="Fixed" time="12:48" tone="pass" box={[38, 68, 30, 16]} boxLabel="Fixed" />
+        <EvidenceFrame variant="bathroom" src={SHOT.bathFixed} dense id="AFTER_01" room="Fixed" time="12:48" tone="pass" box={BOX.bathFixed} boxLabel="Fixed" />
         <div className="rounded-[10px] border border-line p-2.5 text-[11.5px] leading-relaxed text-text-2"><span className="text-[9.5px] font-semibold uppercase tracking-[0.06em] text-text-3">Completion note</span><br />Replaced P-trap, resealed joint, dried cabinet. Tested 20 min — no drip.</div>
       </div>
     </Card>

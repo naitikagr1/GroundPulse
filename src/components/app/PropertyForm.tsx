@@ -1,11 +1,13 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { ArrowRight, Bath, BedDouble, Building2, Car, ChefHat, Home, Info, KeyRound, LandPlot, MapPin, Minus, Plus, Sofa, Sun, Warehouse } from "lucide-react";
+import { ArrowRight, Bath, BedDouble, Building2, Car, ChefHat, Home, Info, KeyRound, LandPlot, MapPin, Minus, Plus, Sofa, Sun, Warehouse, X } from "lucide-react";
 import { addProperty, type FormState } from "@/lib/actions";
 import { SubmitButton } from "@/components/app/SubmitButton";
 import { PinPicker, type PinValue } from "@/components/app/PinPicker";
-import { bhkLabel, bhkKeys, coverage, type BhkKey } from "@/lib/cleaning";
+import { bhkLabel, bhkKeys, type BhkKey } from "@/lib/cleaning";
+import { capFor, clampRooms, defaultsFor, extraRooms, ROOMS } from "@/lib/rooms";
+import { inr } from "@/lib/pricing";
 import { cn } from "@/lib/cn";
 import type { MapConfig } from "@/lib/ola";
 import type { PropertyKind, RoomKey } from "@/lib/types";
@@ -35,22 +37,23 @@ const Group = ({ n, title, lede, children }: { n: number; title: string; lede: s
   </section>
 );
 
-const rows: { k: RoomKey; l: string; I: typeof BedDouble; min: number; max: number }[] = [
-  { k: "bed", l: "Bedrooms", I: BedDouble, min: 0, max: 10 },
-  { k: "bath", l: "Bathrooms", I: Bath, min: 0, max: 10 },
-  { k: "living", l: "Living / dining", I: Sofa, min: 0, max: 6 },
-  { k: "kitchen", l: "Kitchen", I: ChefHat, min: 0, max: 4 },
-  { k: "balcony", l: "Balconies", I: Sun, min: 0, max: 8 },
-  { k: "study", l: "Study / store", I: Warehouse, min: 0, max: 5 },
-  { k: "terrace", l: "Terrace / garden", I: Sun, min: 0, max: 4 },
-  { k: "parking", l: "Parking (car)", I: Car, min: 0, max: 6 },
+/* What a size can hold comes from lib/rooms — the same table the server
+   clamps to — so the form cannot promise a 1 BHK five living rooms. */
+const rows: { k: RoomKey; l: string; I: typeof BedDouble }[] = [
+  { k: "bed", l: "Bedrooms", I: BedDouble },
+  { k: "bath", l: "Bathrooms", I: Bath },
+  { k: "living", l: "Living / dining", I: Sofa },
+  { k: "kitchen", l: "Kitchen", I: ChefHat },
+  { k: "balcony", l: "Balconies", I: Sun },
+  { k: "study", l: "Study / store", I: Warehouse },
+  { k: "terrace", l: "Terrace / garden", I: Sun },
+  { k: "parking", l: "Parking (car)", I: Car },
 ];
 
-const fromSize = (s: BhkKey): Record<RoomKey, number> => ({
-  bed: coverage[s].bed, bath: coverage[s].bath, balcony: coverage[s].balcony,
-  living: Number(s) >= 4 ? 2 : 1, kitchen: 1,
-  study: Number(s) >= 4 ? 1 : 0, terrace: Number(s) >= 4 ? 1 : 0, parking: 1,
-});
+const fromSize = defaultsFor;
+
+/** The smallest bigger size that can hold one more of this room. */
+const sizeFor = (from: BhkKey, k: RoomKey, n: number) => bhkKeys.find((b) => Number(b) > Number(from) && capFor(b, k) >= n);
 
 const TYPES = ["Apartment", "Villa", "Independent house", "Builder floor"] as const;
 
@@ -63,12 +66,28 @@ export function PropertyForm({ welcome = false, map }: { welcome?: boolean; map:
   const [locality, setLocality] = useState("");
   const isPlot = kind === "plot";
 
-  const pickSize = (s: BhkKey) => { setSize(s); setRooms(fromSize(s)); };
+  /* one more than this size holds: ask whether it is really the next size */
+  const [nudge, setNudge] = useState<{ k: RoomKey; to: BhkKey } | null>(null);
+
+  const pickSize = (s: BhkKey) => { setSize(s); setRooms(fromSize(s)); setNudge(null); };
   const bump = (k: RoomKey, d: number) => {
-    const r = rows.find((x) => x.k === k)!;
-    setRooms((cur) => ({ ...cur, [k]: Math.max(r.min, Math.min(r.max, cur[k] + d)) }));
+    const next = rooms[k] + d;
+    if (d < 0) return setRooms((cur) => ({ ...cur, [k]: Math.max(ROOMS[k].min, next) }));
+    if (next <= capFor(size, k)) return setRooms((cur) => ({ ...cur, [k]: next }));
+    const to = sizeFor(size, k, next);
+    if (to) setNudge({ k, to });
+  };
+  /* the bigger size's own layout, keeping anything already raised past it, plus the room that asked */
+  const switchTo = (to: BhkKey, k: RoomKey) => {
+    const base = fromSize(to);
+    setSize(to);
+    setRooms((cur) => clampRooms(to, { ...Object.fromEntries(rows.map((r) => [r.k, Math.max(base[r.k], cur[r.k])])), [k]: Math.max(base[k], cur[k] + 1) }));
+    setNudge(null);
   };
   const total = rows.reduce((n, r) => n + rooms[r.k], 0);
+  /* 4 BHK and up can grow; every room past the layout is priced per visit */
+  const extras = extraRooms(size, rooms, "one-time");
+  const extraPerVisit = extras.reduce((n, e) => n + e.perVisit, 0);
 
   return (
     <form action={submit} className="grid gap-4">
@@ -155,15 +174,42 @@ export function PropertyForm({ welcome = false, map }: { welcome?: boolean; map:
                   <I size={15} className="shrink-0 text-text-3" />
                   <span className="min-w-0 flex-1 truncate text-[14px]">{l}</span>
                   <div className="flex items-center gap-1">
-                    <button type="button" onClick={() => bump(k, -1)} aria-label={`One fewer ${l}`} className="grid h-8 w-8 place-items-center rounded-full border border-line-2 text-text-2 transition hover:border-ink hover:text-ink disabled:opacity-30" disabled={rooms[k] === 0}><Minus size={13} /></button>
+                    <button type="button" onClick={() => bump(k, -1)} aria-label={`One fewer ${l}`} className="grid h-8 w-8 place-items-center rounded-full border border-line-2 text-text-2 transition hover:border-ink hover:text-ink disabled:opacity-30" disabled={rooms[k] <= ROOMS[k].min}><Minus size={13} /></button>
                     <span className="w-6 text-center font-mono text-[14px] tabular-nums">{rooms[k]}</span>
-                    <button type="button" onClick={() => bump(k, 1)} aria-label={`One more ${l}`} className="grid h-8 w-8 place-items-center rounded-full border border-line-2 text-text-2 transition hover:border-ink hover:text-ink"><Plus size={13} /></button>
+                    <button type="button" onClick={() => bump(k, 1)} aria-label={`One more ${l}`} className="grid h-8 w-8 place-items-center rounded-full border border-line-2 text-text-2 transition hover:border-ink hover:text-ink disabled:opacity-30"
+                      disabled={rooms[k] >= capFor(size, k) && !sizeFor(size, k, rooms[k] + 1)}><Plus size={13} /></button>
                   </div>
                 </div>
               ))}
             </div>
+            {Number(size) >= 4 && (
+              <p className="mt-3 rounded-[12px] bg-paper px-3.5 py-2.5 text-[13px] leading-snug text-text-2">
+                {extras.length
+                  ? <>Past a {bhkLabel[size]} layout: {extras.map((e) => `${e.n} × ${e.one.toLowerCase()} at ${inr(e.rate)}`).join(" · ")} — <b className="text-ink">+{inr(extraPerVisit)} on each inspection</b>.</>
+                  : <>A {bhkLabel[size]} layout is included. Each room you add past it is charged per inspection — a bedroom {inr(ROOMS.bed.rate)}, a bathroom {inr(ROOMS.bath.rate)}.</>}
+              </p>
+            )}
           </Group>
         </>
+      )}
+
+      {nudge && (
+        <div className="fixed inset-0 z-[70] grid place-items-end bg-ink/40 p-4 backdrop-blur-[2px] sm:place-items-center" onClick={() => setNudge(null)}>
+          <div role="dialog" aria-modal="true" aria-labelledby="nudge-title" onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-[380px] rounded-[20px] bg-white p-5 shadow-float">
+            <div className="flex items-start justify-between gap-3">
+              <h3 id="nudge-title" className="text-[17px] font-semibold tracking-[-0.015em]">Is it a {bhkLabel[nudge.to]}?</h3>
+              <button type="button" onClick={() => setNudge(null)} aria-label="Close" className="-m-1 p-1 text-text-3 hover:text-ink"><X size={18} /></button>
+            </div>
+            <p className="t-small mt-1.5 leading-relaxed">
+              A {bhkLabel[size]} has at most {capFor(size, nudge.k)} {capFor(size, nudge.k) === 1 ? ROOMS[nudge.k].one.toLowerCase() : ROOMS[nudge.k].label.toLowerCase()}. Switch to {bhkLabel[nudge.to]} and we will set the checklist — and the price — for the home you actually have.
+            </p>
+            <div className="mt-4 grid gap-2 sm:grid-cols-2">
+              <button type="button" onClick={() => switchTo(nudge.to, nudge.k)} className="btn btn-accent btn-sm">Switch to {bhkLabel[nudge.to]}</button>
+              <button type="button" onClick={() => setNudge(null)} className="btn btn-white btn-sm">Keep {bhkLabel[size]}</button>
+            </div>
+          </div>
+        </div>
       )}
 
       <Group n={isPlot ? 3 : 5} title="How does the inspector get in?" lede="The more of this we have, the less anybody has to call you about it.">

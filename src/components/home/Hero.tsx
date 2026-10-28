@@ -8,6 +8,7 @@ import { ArrowRight } from "lucide-react";
 import { HealthRing } from "@/components/ui/HealthRing";
 import { AddressBar } from "@/components/shared/AddressBar";
 import { EASE } from "@/lib/motion";
+import { LIMIT } from "@/lib/offer";
 
 const up = (delay: number) => ({ initial: { opacity: 0, y: 16 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.8, delay, ease: EASE } });
 
@@ -33,7 +34,7 @@ export function Hero() {
 
         <div className="relative z-10 mx-auto flex w-full max-w-[684px] flex-col items-center px-5 pt-14 text-center sm:pt-[72px] md:pt-[88px]">
           <motion.a {...up(0.02)} href="#founding" className="mb-5 inline-flex h-9 items-center gap-1.5 rounded-full bg-white/[0.16] px-4 text-[13.5px] font-medium text-white backdrop-blur-sm transition hover:bg-white/25 [box-shadow:inset_0_0_0_1px_rgba(255,255,255,0.28)]">
-            First 10 owners get a free inspection <ArrowRight size={14} />
+            First {LIMIT} owners get a free inspection <ArrowRight size={14} />
           </motion.a>
           <motion.h1 {...up(0.1)} id="hero-title" className="serif t-display max-w-[16ch] text-balance text-white [text-shadow:0_2px_30px_rgba(0,0,0,0.35)]">
             Know your home is fine. From anywhere.

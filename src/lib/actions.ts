@@ -22,7 +22,7 @@ import { isLive, liveRefusal } from "@/lib/liveRepairs";
 import { refundOwed } from "@/lib/refunds";
 import { db, invoiceRef, mutate, now, ticketRef, uid, visitRef } from "@/lib/store";
 import { ADD_ON_LIMITS, SLOTS, inr, planPriceAt, quote } from "@/lib/quote";
-import { eligible } from "@/lib/offer";
+import { eligible, LIMIT, spotsLeft } from "@/lib/offer";
 import { fmtDayDate, isBookable, todayKey } from "@/lib/format";
 import { newOtp, payoutFor } from "@/lib/payout";
 import { inServiceArea, normaliseCity, HOME_CITY } from "@/lib/city";
@@ -187,9 +187,12 @@ export async function saveProfile(_prev: FormState, fd: FormData): Promise<FormS
     u.contactPhone = phone.phone;
     u.livesIn = s(fd, "livesIn", 120);
     if (tz && validZone(tz)) u.tz = tz;
+    /* A name and a number are all the welcome asks for. The property and
+       the free visit are the dashboard's to offer, when they are ready. */
+    if (s(fd, "step") === "welcome" && !u.onboardedAt) u.onboardedAt = now();
   });
   revalidatePath("/app", "layout");
-  if (s(fd, "step") === "welcome") redirect(user.onboardedAt ? "/app" : "/welcome/property");
+  if (s(fd, "step") === "welcome") redirect("/app");
   return { ok: true, message: "Saved." };
 }
 
@@ -312,7 +315,8 @@ export async function addProperty(_prev: FormState, fd: FormData): Promise<FormS
   });
 
   revalidatePath("/app", "layout");
-  redirect(s(fd, "step") === "welcome" ? `/app/book?property=${id}&welcome=1` : `/app/properties/${id}`);
+  /* added on the way to the free visit: straight on to booking it */
+  redirect(s(fd, "step") === "welcome" ? `/app/book?property=${id}&plan=one-time` : `/app/properties/${id}`);
 }
 
 /** The full edit, or — with scope=access — just who holds a key and how
@@ -480,8 +484,20 @@ export async function bookVisit(_prev: FormState, fd: FormData): Promise<FormSta
   const planUnpaid = !!sub && d0.visits.some((x) => x.id === sub.startedByVisitId && x.status === "unpaid");
   if (planUnpaid && (usePlan || planClean || planService)) return { ok: false, error: `Pay the 25% on ${planName(sub!.planId)} first — then its visits and cleans are yours to book.` };
 
-  /* Whether the launch offer applies is decided here, never from the form. */
-  const founding = !usePlan && eligible(user, property, kind, planId);
+  /* Whether the launch offer applies is decided here, never from the form… */
+  const founding = !usePlan && eligible(user, spotsLeft(d0.visits), property, kind, planId);
+  /* …but a form that showed it free is stopped, not charged, if the place went in the meantime. */
+  if (fd.get("free") === "1" && !founding) {
+    revalidatePath("/app/book");
+    return {
+      ok: false,
+      error: user.freeVisitUsedAt
+        ? "Your free inspection is already booked, so this one is charged normally — its price is on the page now."
+        : user.freeRevokedAt
+        ? "The free inspection is no longer on this account, so this one is charged normally — its price is on the page now."
+        : `The last of the ${LIMIT} free inspections has just been booked, so this one is charged normally — its price is on the page now.`,
+    };
+  }
 
   const q = quote({
     kind, planId, size: property.size, tierId, addOns, founding, rooms: property.rooms,

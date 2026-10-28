@@ -8,6 +8,7 @@ import { SectionHead } from "@/components/shared/SectionHead";
 import { EvidenceFrame } from "@/components/ui/EvidenceFrame";
 import { cn } from "@/lib/cn";
 import { EASE } from "@/lib/motion";
+import { BOX, SHOT } from "@/lib/photos";
 
 type Phase = "pending" | "confirm" | "requested" | "assigned" | "progress" | "completed" | "declined";
 const order: Phase[] = ["requested", "assigned", "progress", "completed"];
@@ -37,10 +38,10 @@ export function WhenWrong() {
               <div className="flex items-center justify-between"><span className="text-[13px] font-semibold text-accent">Step 1</span><span className="chip chip-fail">Fail · Water leakage</span></div>
               <h3 className="t-3 mt-3">The inspector flags it — with proof.</h3>
               <div className="mt-4 grid grid-cols-2 gap-1.5">
-                <EvidenceFrame variant="bathroom" dense id="0412" room="Bathroom" time="14:02" box={[38, 68, 30, 16]} boxLabel="Leak" />
-                <EvidenceFrame variant="bathroom" dense id="0413" room="Close-up" time="14:03" box={[20, 40, 60, 40]} boxLabel="Moisture" />
+                <EvidenceFrame variant="bathroom" src={SHOT.bathLeak} dense id="0412" room="Bathroom" time="14:02" box={BOX.bathLeak} boxLabel="Leak" />
+                <EvidenceFrame variant="bathroom" src={SHOT.bathLeakClose} dense id="0413" room="Close-up" time="14:03" box={BOX.bathLeakClose} boxLabel="Moisture" />
               </div>
-              <p className="mt-3 text-[13.5px] leading-relaxed text-text-2">Slow drip from the trap under the sink. Cabinet base is damp with early swelling. Recommend replacing the trap and sealing.</p>
+              <p className="mt-3 text-[13.5px] leading-relaxed text-text-2">Slow drip from the trap joint under the basin — water is pooling on the floor and staining the tiles. Recommend replacing the trap and sealing.</p>
               <div className="mt-3 flex items-center gap-1.5 text-[12.5px] text-text-3"><BadgeCheck size={13} className="text-accent" /> Ravi K. · verified inspector · 14:02 IST</div>
             </div>
           </Reveal>
@@ -115,7 +116,7 @@ export function WhenWrong() {
               <AnimatePresence>
                 {phase === "completed" && (
                   <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.5, ease: EASE }} className="mt-3 grid grid-cols-[1fr_1.4fr] gap-2">
-                    <EvidenceFrame variant="bathroom" dense id="AFTER_01" room="Fixed" time="12:48" tone="pass" box={[38, 68, 30, 16]} boxLabel="Fixed" />
+                    <EvidenceFrame variant="bathroom" src={SHOT.bathFixed} dense id="AFTER_01" room="Fixed" time="12:48" tone="pass" box={BOX.bathFixed} boxLabel="Fixed" />
                     <div className="rounded-[10px] border border-line p-2.5 text-[12px] leading-relaxed text-text-2"><span className="text-[10px] font-semibold uppercase tracking-[0.06em] text-text-3">Completion note</span><br />Replaced P-trap, resealed joint, dried cabinet. Tested 20 min — no drip.</div>
                   </motion.div>
                 )}

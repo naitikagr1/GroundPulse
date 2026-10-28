@@ -10,6 +10,7 @@ import { cn } from "@/lib/cn";
 import { APPS_LIVE } from "@/lib/flags";
 import { EASE } from "@/lib/motion";
 import { navLinks, type NavEntry } from "@/lib/nav";
+import { NAV_CTA, START } from "@/lib/start";
 
 /** A hover/focus dropdown. Kept in the DOM and toggled with `hidden` so
     the links stay reachable by keyboard and by a screen reader. */
@@ -41,7 +42,7 @@ function NavGroup({ entry, path, align = "left" }: { entry: NavEntry; path: stri
         aria-expanded={open}
         onClick={() => { if (!hovering.current) setOpen((v) => !v); }}
         onKeyDown={(e) => { if (e.key === "Escape" && open) { cancelClose(); setOpen(false); e.currentTarget.focus(); } }}
-        className={cn("inline-flex items-center gap-1 rounded-full px-3 py-2 text-[15px] font-medium transition hover:bg-ink/[0.05] xl:px-4 xl:text-[16px]", active ? "text-ink" : "text-ink/80 hover:text-ink")}
+        className={cn("inline-flex items-center gap-1 whitespace-nowrap rounded-full px-3 py-2 text-[15px] font-medium transition hover:bg-ink/[0.05] xl:px-4 xl:text-[16px]", active ? "text-ink" : "text-ink/80 hover:text-ink")}
       >
         {entry.label}
         <ChevronDown size={14} className={cn("transition-transform duration-300", open && "rotate-180")} />
@@ -96,17 +97,22 @@ export function Nav() {
           <div className="flex items-center gap-1">
             <nav className="hidden items-center lg:flex" aria-label="Primary">
               {/* the logo goes home too, but only people who already know that use it */}
-              <Link href="/" className={cn("rounded-full px-3 py-2 text-[15px] font-medium transition hover:bg-ink/[0.05] xl:px-4 xl:text-[16px]", path === "/" ? "text-ink" : "text-ink/80 hover:text-ink")}>
+              <Link href="/" className={cn("whitespace-nowrap rounded-full px-3 py-2 text-[15px] font-medium transition hover:bg-ink/[0.05] xl:px-4 xl:text-[16px]", path === "/" ? "text-ink" : "text-ink/80 hover:text-ink")}>
                 Home
               </Link>
               {navLinks.map((l, i) => (l.items ? <NavGroup key={l.label} entry={l} path={path} align={i >= navLinks.length / 2 ? "right" : "left"} /> : (
-                <Link key={l.href} href={l.href} className={cn("rounded-full px-3 py-2 text-[15px] font-medium transition hover:bg-ink/[0.05] xl:px-4 xl:text-[16px]", path === l.href ? "text-ink" : "text-ink/80 hover:text-ink")}>
+                <Link key={l.href} href={l.href} className={cn("whitespace-nowrap rounded-full px-3 py-2 text-[15px] font-medium transition hover:bg-ink/[0.05] xl:px-4 xl:text-[16px]", path === l.href ? "text-ink" : "text-ink/80 hover:text-ink")}>
                   {l.label}
                 </Link>
               )))}
             </nav>
-            {APPS_LIVE && <Link href="/signin" className="btn btn-ghost ml-1 hidden rounded-full px-4 text-[15px] font-medium md:inline-flex">Sign in</Link>}
-            <Link href="/access" className="btn btn-pill ml-1 hidden md:inline-flex">Get started</Link>
+            {/* owners who already have an account: quiet, on a laptop; on a phone they use the app, or the menu */}
+            {APPS_LIVE && <Link href="/signin" className="btn btn-ghost ml-1 hidden h-10 rounded-full px-3 text-[15px] font-medium md:inline-flex xl:px-4">Sign in</Link>}
+            {/* everybody else: the one green button, named for what they get */}
+            <Link href={START} className="btn btn-accent ml-1 hidden h-9 min-h-0 whitespace-nowrap rounded-full px-3 text-[13px] min-[370px]:inline-flex sm:px-4 sm:text-[14px] md:h-10 md:px-5 md:text-[15px]">
+              {/* the short name wherever space is tight: phones, and laptops where the full menu shows */}
+              <span className="md:hidden lg:inline xl:hidden">{NAV_CTA.short}</span><span className="hidden md:inline lg:hidden xl:inline">{NAV_CTA.long}</span>
+            </Link>
             <button onClick={() => setOpen((v) => !v)} aria-expanded={open} aria-label={open ? "Close menu" : "Open menu"} className="relative z-[60] ml-1 grid h-11 w-11 place-items-center rounded-full lg:hidden">
               <span className="relative block h-[10px] w-[20px]">
                 <span className={cn("absolute left-0 top-0 h-[2px] w-full rounded bg-ink transition-transform duration-500 [transition-timing-function:cubic-bezier(.16,1,.3,1)]", open && "translate-y-[4px] rotate-45")} />
@@ -138,8 +144,8 @@ export function Nav() {
                 ))}
               </motion.ul>
               <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35, duration: 0.5, ease: EASE }} className="mt-auto">
-                <Link href="/access" className="btn btn-accent btn-lg w-full">Get started <ArrowRight size={16} /></Link>
-                {APPS_LIVE && <Link href="/signin" className="btn btn-white btn-lg mt-2 w-full">Sign in to your account</Link>}
+                <Link href={START} className="btn btn-accent btn-lg w-full">{NAV_CTA.long} <ArrowRight size={16} /></Link>
+                {APPS_LIVE && <Link href="/signin" className="btn btn-white btn-lg mt-2 w-full">Sign in</Link>}
                 <p className="t-small mt-4 text-center">Takes 5 minutes · Your media stays private</p>
               </motion.div>
             </div>

@@ -195,7 +195,7 @@ export default function Page() {
       <Clause id="offer" n={12} title="The launch offer">
         <Points n={12} items={[
           ...offerTerms,
-          `The offer is for the first ${LIMIT} owners to sign up, one inspection each, and closes once ${LIMIT} owners have used it.`,
+          `The offer is for the first ${LIMIT} owners to book it, one inspection each — counting those booked with us before the app opened — and closes once all ${LIMIT} are booked. Cancelling a free inspection gives its place back.`,
           "Anything paid that you add to the free inspection — cleaning, a car — is charged as usual.",
           "What we ask in return: honest feedback, and permission to share your report as a blurred example and to use what we learn to train the inspectors we take on later. You can say no to the sharing and the inspection is still free.",
         ]} />

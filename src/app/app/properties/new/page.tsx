@@ -7,8 +7,10 @@ import { PageHead } from "@/components/app/ui";
 
 export const metadata = { title: "Add a property" };
 
-export default async function Page() {
+export default async function Page({ searchParams }: PageProps<"/app/properties/new">) {
   await requireOwner();
+  /* from the free-visit card: once it is saved, straight on to booking it */
+  const thenBook = (await searchParams).then === "book";
   return (
     <>
       <Link href="/app/properties" className="mb-4 inline-flex items-center gap-1.5 text-[13.5px] font-medium text-text-2 transition hover:text-ink"><ArrowLeft size={14} /> Properties</Link>
@@ -17,7 +19,7 @@ export default async function Page() {
         title="Add a property"
         lede="What it is, where it is, and how somebody gets in. The rooms you list become the checklist an inspector walks."
       />
-      <PropertyForm map={mapConfig()} />
+      <PropertyForm map={mapConfig()} welcome={thenBook} />
     </>
   );
 }

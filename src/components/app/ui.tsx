@@ -11,12 +11,14 @@ export function Panel({ className, children, ...rest }: React.ComponentProps<"se
   return <section className={cn("card border border-line bg-white shadow-card", className)} {...rest}>{children}</section>;
 }
 
-export function PanelHead({ title, meta, action, className }: { title: React.ReactNode; meta?: React.ReactNode; action?: React.ReactNode; className?: string }) {
+/** `wrapMeta` lets the line under the title run on — for meta that carries
+    numbers somebody has to read in full, not a caption. */
+export function PanelHead({ title, meta, action, className, wrapMeta = false }: { title: React.ReactNode; meta?: React.ReactNode; action?: React.ReactNode; className?: string; wrapMeta?: boolean }) {
   return (
     <div className={cn("flex items-center justify-between gap-3 border-b border-line px-5 py-4", className)}>
       <div className="min-w-0">
         <div className="truncate text-[15px] font-semibold tracking-[-0.01em]">{title}</div>
-        {meta && <div className="t-small mt-0.5 truncate">{meta}</div>}
+        {meta && <div className={cn("t-small mt-0.5", wrapMeta ? "leading-snug" : "truncate")}>{meta}</div>}
       </div>
       {action}
     </div>

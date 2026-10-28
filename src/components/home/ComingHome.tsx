@@ -5,14 +5,16 @@ import { SectionHead } from "@/components/shared/SectionHead";
 import { EvidenceFrame } from "@/components/ui/EvidenceFrame";
 import { comingHome } from "@/lib/pricing";
 import { bhkKeys, bhkLabel, inr, tiers } from "@/lib/cleaning";
+import { START, START_LABEL } from "@/lib/start";
+import { SHOT } from "@/lib/photos";
 
 /** Before / after pair — the proof a cleaning receipt can't give you. */
-function BeforeAfter({ variant, room, before, after }: { variant: "kitchen" | "bathroom"; room: string; before: string; after: string }) {
+function BeforeAfter({ variant, room, before, after, srcBefore, srcAfter }: { variant: "kitchen" | "bathroom"; room: string; before: string; after: string; srcBefore?: string | null; srcAfter?: string | null }) {
   return (
     <div className="grid grid-cols-2 gap-2">
-      {([["Before", before, "fail"], ["After", after, "pass"]] as const).map(([label, time, tone]) => (
+      {([["Before", before, "fail", srcBefore], ["After", after, "pass", srcAfter]] as const).map(([label, time, tone, src]) => (
         <div key={label} className="relative">
-          <EvidenceFrame variant={variant} id="" room={room} time={time} tone={tone} ratio="4 / 3" dense />
+          <EvidenceFrame variant={variant} src={src} id="" room={room} time={time} tone={tone} ratio="4 / 3" dense />
           <span className={`absolute left-2 top-2 rounded-full px-2 py-0.5 text-[10.5px] font-medium ${label === "After" ? "bg-accent text-white" : "bg-black/60 text-white"}`}>{label} · {time}</span>
         </div>
       ))}
@@ -57,11 +59,11 @@ export function ComingHome() {
               </ul>
             </div>
             <div className="grid gap-3">
-              <BeforeAfter variant="kitchen" room="Kitchen" before="11:14" after="15:40" />
-              <BeforeAfter variant="bathroom" room="Bathroom 1" before="11:52" after="15:44" />
+              <BeforeAfter variant="kitchen" room="Kitchen" before="11:14" after="15:40" srcBefore={SHOT.kitchenDirty} srcAfter={SHOT.kitchen} />
+              <BeforeAfter variant="bathroom" room="Bathroom 1" before="11:52" after="15:44" srcBefore={SHOT.bathLeak} srcAfter={SHOT.bathFixed} />
               <p className="text-[12.5px] text-white/55">
                 Every room photographed from the same angle before the crew starts and after they finish — so you can judge the work
-                yourself instead of taking a completion tick on faith.
+                yourself instead of taking a completion tick on faith. <span className="text-white/40">Example photos; your report has your own.</span>
               </p>
             </div>
           </div>
@@ -123,7 +125,7 @@ export function ComingHome() {
                 <p className="mt-2.5 text-[12px] leading-relaxed text-text-2">Chimney, fridge, microwave, cabinet interiors and sofa shampoo are itemised, not assumed — you pick them before you pay.</p>
               </div>
               <div className="mt-auto pt-5">
-                <Link href="/access" className="btn btn-accent w-full">Join the waitlist <ArrowRight size={16} /></Link>
+                <Link href={START} className="btn btn-accent w-full">{START_LABEL} <ArrowRight size={16} /></Link>
                 <Link href="/cleaning" className="mt-2 flex items-center justify-center gap-1.5 py-1 text-[13px] font-medium text-accent-2 hover:underline">
                   See every room, every step and every price <ArrowRight size={13} />
                 </Link>

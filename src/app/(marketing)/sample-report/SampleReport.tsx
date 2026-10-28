@@ -7,18 +7,20 @@ import { HealthRing } from "@/components/ui/HealthRing";
 import { EvidenceFrame, type EvidenceVariant } from "@/components/ui/EvidenceFrame";
 import { MapCard } from "@/components/ui/MapCard";
 import { cn } from "@/lib/cn";
+import { START, START_LABEL } from "@/lib/start";
+import { BOX, SHOT } from "@/lib/photos";
 
 type S = "pass" | "fail" | "attn";
-const rooms: { name: string; v: EvidenceVariant; dur: string; items: { t: string; s: S }[] }[] = [
+const rooms: { name: string; v: EvidenceVariant; src?: string | null; dur: string; items: { t: string; s: S }[] }[] = [
   { name: "Entrance & hallway", v: "entrance", dur: "0:48", items: [{ t: "Main door & lock", s: "pass" }, { t: "Letterbox / notices", s: "pass" }, { t: "Signs of forced entry", s: "pass" }] },
   { name: "Living / dining", v: "living", dur: "1:12", items: [{ t: "Walls, ceiling, damp", s: "pass" }, { t: "Windows & latches", s: "pass" }, { t: "Sockets & switches", s: "pass" }] },
   { name: "Kitchen", v: "kitchen", dur: "1:05", items: [{ t: "Sink & plumbing", s: "pass" }, { t: "Gas connection (off)", s: "pass" }, { t: "Chimney & cabinets", s: "pass" }] },
   { name: "Bedroom 1", v: "bedroom", dur: "0:56", items: [{ t: "Window locks", s: "attn" }, { t: "AC unit", s: "pass" }, { t: "Wardrobe (closed)", s: "pass" }] },
   { name: "Bedroom 2", v: "bedroom", dur: "0:51", items: [{ t: "Window locks", s: "pass" }, { t: "Ceiling & walls", s: "pass" }, { t: "Wardrobe (closed)", s: "pass" }] },
-  { name: "Bathroom 1", v: "bathroom", dur: "1:20", items: [{ t: "Sink & plumbing", s: "fail" }, { t: "Taps & geyser", s: "pass" }, { t: "Drainage", s: "pass" }] },
+  { name: "Bathroom 1", v: "bathroom", src: SHOT.bathLeak, dur: "1:20", items: [{ t: "Sink & plumbing", s: "fail" }, { t: "Taps & geyser", s: "pass" }, { t: "Drainage", s: "pass" }] },
   { name: "Bathroom 2", v: "bathroom", dur: "0:44", items: [{ t: "Sink & plumbing", s: "pass" }, { t: "Taps & geyser", s: "pass" }, { t: "Drainage", s: "pass" }] },
   { name: "Balcony", v: "balcony", dur: "0:38", items: [{ t: "Railing", s: "pass" }, { t: "Drainage", s: "pass" }, { t: "Plants / pests", s: "pass" }] },
-  { name: "Parking · KA-03-MX-4421", v: "entrance", dur: "0:42", items: [{ t: "Started & idled 10 min", s: "pass" }, { t: "Battery, tyres, leaks", s: "pass" }, { t: "Cover on, odometer 42,118", s: "pass" }] },
+  { name: "Parking · KA-03-MX-4421", v: "entrance", src: SHOT.car, dur: "0:42", items: [{ t: "Started & idled 10 min", s: "pass" }, { t: "Battery, tyres, leaks", s: "pass" }, { t: "Cover on, odometer 42,118", s: "pass" }] },
 ];
 const chip = (s: S) => (s === "pass" ? "chip chip-pass" : s === "fail" ? "chip chip-fail" : "chip chip-warn");
 const label = (s: S) => (s === "pass" ? "Pass" : s === "fail" ? "Fail" : "Attention");
@@ -27,10 +29,10 @@ function Meta({ I, k, v }: { I: typeof Clock; k: string; v: string }) {
   return <div className="flex items-center gap-2.5 text-[13.5px]"><span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-accent-soft text-accent"><I size={14} /></span><span className="text-text-2">{k}</span><span className="ml-auto font-medium">{v}</span></div>;
 }
 
-function VideoTile({ title, dur, v, className }: { title: string; dur: string; v: EvidenceVariant; className?: string }) {
+function VideoTile({ title, dur, v, src, className }: { title: string; dur: string; v: EvidenceVariant; src?: string | null; className?: string }) {
   return (
     <div className={cn("relative", className)}>
-      <EvidenceFrame variant={v} id="" room={title} time={dur} tone="pass" ratio="16 / 10" dense />
+      <EvidenceFrame variant={v} src={src} id="" room={title} time={dur} tone="pass" ratio="16 / 10" dense />
       <span className="absolute left-1/2 top-[42%] grid h-10 w-10 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-white/90 text-ink"><Play size={16} className="ml-0.5 fill-ink" /></span>
       <span className="absolute left-2 top-2 inline-flex items-center gap-1 rounded-full bg-black/60 px-2 py-0.5 text-[10px] font-medium text-white"><Video size={10} /> {dur}</span>
     </div>
@@ -76,10 +78,10 @@ function HomeReport({ approved, setApproved }: { approved: boolean; setApproved:
         <div className="mt-5 grid gap-5 lg:grid-cols-[1fr_1fr]">
           <div>
             <div className="grid grid-cols-2 gap-2">
-              <EvidenceFrame variant="bathroom" id="0412" room="Bathroom 1" time="13:41" box={[38, 68, 30, 16]} boxLabel="Leak" />
-              <VideoTile title="Bathroom 1 · leak" dur="0:22" v="bathroom" />
+              <EvidenceFrame variant="bathroom" src={SHOT.bathLeak} id="0412" room="Bathroom 1" time="13:41" box={BOX.bathLeak} boxLabel="Leak" />
+              <VideoTile title="Bathroom 1 · leak" dur="0:22" v="bathroom" src={SHOT.bathLeakClose} />
             </div>
-            <p className="mt-3 text-[14px] leading-relaxed text-text-2">Slow drip from the trap under the sink. Cabinet base damp, early swelling. Recommend replacing the trap and sealing. — Ravi K., 13:41</p>
+            <p className="mt-3 text-[14px] leading-relaxed text-text-2">Slow drip from the trap joint under the basin — water is pooling on the floor and staining the tiles. Recommend replacing the trap and sealing. — Ravi K., 13:41</p>
           </div>
           <div className="rounded-[14px] bg-paper p-5">
             <div className="text-[13px] font-medium text-text-2">Quote from a verified pro · rate card</div>
@@ -107,7 +109,7 @@ function HomeReport({ approved, setApproved }: { approved: boolean; setApproved:
       <div className="swipe mt-4 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {rooms.map((r) => (
           <div key={r.name} className="card bg-white p-4 shadow-card">
-            <VideoTile title={r.name} dur={r.dur} v={r.v} />
+            <VideoTile title={r.name} dur={r.dur} v={r.v} src={r.src} />
             <div className="mt-3 flex items-center justify-between"><span className="text-[15px] font-medium">{r.name}</span><span className="inline-flex items-center gap-1 text-[11.5px] text-text-2"><Video size={11} /> video ✓</span></div>
             <ul className="mt-2 divide-y divide-line">
               {r.items.map((it) => <li key={it.t} className="flex items-center justify-between py-2 text-[13.5px]"><span>{it.t}</span><span className={chip(it.s)}>{label(it.s)}</span></li>)}
@@ -120,7 +122,10 @@ function HomeReport({ approved, setApproved }: { approved: boolean; setApproved:
 }
 
 function PlotReport() {
-  const corners = [["NE corner", "0:18", "Marker intact"], ["SE corner", "0:15", "Marker intact"], ["SW corner", "0:21", "Fence post leaning"], ["NW corner", "0:16", "Marker intact"]];
+  const corners: [string, string, string, string | null][] = [
+    ["NE corner", "0:18", "Marker intact", SHOT.plotNE], ["SE corner", "0:15", "Marker intact", SHOT.plotSE],
+    ["SW corner", "0:21", "Fence post leaning", SHOT.plotSW], ["NW corner", "0:16", "Marker intact", SHOT.plotNW],
+  ];
   return (
     <>
       <div className="grid gap-4 lg:grid-cols-[1.3fr_1fr]">
@@ -152,9 +157,10 @@ function PlotReport() {
       </div>
 
       <div className="mt-4 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {corners.map(([c, d, r]) => (
+        {corners.map(([c, d, r, src]) => (
           <div key={c} className="card bg-white p-4 shadow-card">
-            <VideoTile title={c} dur={d} v="balcony" />
+            {/* a plot corner is not a flat's balcony: a corner without a photo keeps the drawing */}
+            <VideoTile title={c} dur={d} v="balcony" src={src} />
             <div className="mt-3 flex items-center justify-between"><span className="text-[15px] font-medium">{c}</span><span className={r.includes("leaning") ? "chip chip-warn" : "chip chip-pass"}>{r.includes("leaning") ? "Attention" : "Pass"}</span></div>
             <div className="t-small mt-1">{r} · 13.1187° N, 77.5945° E</div>
           </div>
@@ -189,7 +195,7 @@ export function SampleReport() {
         <div className="mt-8">{tab === "home" ? <HomeReport approved={approved} setApproved={setApproved} /> : <PlotReport />}</div>
         <div className="mt-10 flex flex-col items-center gap-3 text-center">
           <p className="t-body text-text-2">Want one of these for your place?</p>
-          <Link href="/access" className="btn btn-accent">Join the waitlist <ArrowRight size={16} /></Link>
+          <Link href={START} className="btn btn-accent">{START_LABEL} <ArrowRight size={16} /></Link>
         </div>
       </div>
       <div className="h-16 md:h-24" />

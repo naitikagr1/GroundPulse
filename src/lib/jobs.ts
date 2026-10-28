@@ -28,11 +28,12 @@ import { db, mutate, now, uid } from "@/lib/store";
 import { pushEvent } from "@/lib/events";
 import { fmtDayDate } from "@/lib/format";
 import { inr } from "@/lib/pricing";
-import { DEPOSIT } from "@/lib/payout";
+import { DEPOSIT, HOLD, PENALTY } from "@/lib/payout";
 import type { DB, Inspector, Penalty, Visit } from "@/lib/types";
 
-export const HOLD = { max: 5, untilUnlock: 2, perDay: 3 } as const;
-export const PENALTY = { noShow: 250, lateRelease: 150, freeReleaseHours: 24, enRouteGraceMinutes: 45, pauseAfter: 2, pauseWindowDays: 30 } as const;
+/* The numbers live with the pay rules in lib/payout, where a page that
+   runs in the browser — the inspector application — can read them too. */
+export { HOLD, PENALTY };
 
 /** How many this inspector may hold at once — fewer until ₹1,500 of the deposit is in. */
 export const holdMax = (ins: Pick<Inspector, "depositInr">) => (ins.depositInr >= DEPOSIT.unlock ? HOLD.max : HOLD.untilUnlock);

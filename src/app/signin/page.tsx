@@ -1,13 +1,16 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import type { Route } from "next";
-import { ArrowLeft, ArrowRight, BadgeCheck, CalendarCheck, Fingerprint, IndianRupee, KeyRound, LogOut, MapPinned, ShieldCheck, Timer } from "lucide-react";
+import { ArrowLeft, ArrowRight, BadgeCheck, Fingerprint, IndianRupee, KeyRound, LogOut, MapPinned, ShieldCheck, Timer, UserPlus } from "lucide-react";
 import { Logo } from "@/components/ui/Logo";
 import { currentUser, homeFor, prettyPhone } from "@/lib/auth";
 import { switchAccount } from "@/lib/actions";
 import { googleReady } from "@/lib/google";
 import { SignInForm } from "./SignInForm";
 import { OwnerDoor } from "./OwnerDoor";
+import { InstallHint } from "@/components/app/InstallHint";
+import { InspectorForm } from "@/app/(marketing)/access/InspectorForm";
+import { APPLY } from "@/lib/start";
 import { cn } from "@/lib/cn";
 import { notFound } from "next/navigation";
 import { APPS_LIVE } from "@/lib/flags";
@@ -50,6 +53,8 @@ export default async function Page({ searchParams }: PageProps<"/signin">) {
   const sp = await searchParams;
   const wants = sp.as === "inspector" ? "inspector" : "owner";
   const inspector = wants === "inspector";
+  /* the application lives on the inspector side, one tap from the door it leads to */
+  const applying = inspector && sp.apply === "1";
   const panel = PANELS[wants];
   /* Somebody already signed in is not necessarily in the wrong place —
      they may have come here to switch. Bouncing them silently is what
@@ -71,7 +76,7 @@ export default async function Page({ searchParams }: PageProps<"/signin">) {
               <ShieldCheck size={13} /> StillYours inspector roster
             </span>
           )}
-          <h2 className="serif text-[clamp(2.2rem,3vw,3rem)] leading-[1.06] tracking-[-0.035em]">{panel.title}</h2>
+          <h2 className="serif text-[clamp(2.2rem,3vw,3rem)] leading-[1.06] tracking-[-0.035em]">{applying ? <>Join the<br />roster.</> : panel.title}</h2>
           <ul className="mt-10 grid gap-6">
             {panel.points.map(({ I, t, b }) => (
               <li key={t} className="flex gap-4">
@@ -88,7 +93,8 @@ export default async function Page({ searchParams }: PageProps<"/signin">) {
       <section className={cn("flex min-h-dvh flex-col px-6 py-8 sm:px-10", inspector ? "bg-[#0d1512]" : "bg-paper")}>
         <div className="flex items-center justify-between lg:justify-end">
           <Link href="/" className="lg:hidden"><Logo size={34} inverted={inspector} /></Link>
-          <Link href="/" className={cn("inline-flex items-center gap-1.5 text-[13.5px] font-medium transition", inspector ? "text-white/60 hover:text-white" : "text-text-2 hover:text-ink")}>
+          {/* opened from the home screen this is the app — there is no site to go back to */}
+          <Link href="/" className={cn("inline-flex items-center gap-1.5 text-[13.5px] font-medium transition standalone:hidden", inspector ? "text-white/60 hover:text-white" : "text-text-2 hover:text-ink")}>
             <ArrowLeft size={14} /> Back to site
           </Link>
         </div>
@@ -109,7 +115,15 @@ export default async function Page({ searchParams }: PageProps<"/signin">) {
           </nav>
 
           <div className={cn("w-full max-w-[440px]", inspector && "rounded-[22px] border border-white/10 bg-paper p-6 shadow-float sm:p-8")}>
-            {user ? (
+            {applying ? (
+              <div className="w-full">
+                <h1 className="serif flex items-center gap-2.5 text-[clamp(1.8rem,4vw,2.3rem)] leading-[1.05] tracking-[-0.035em]">
+                  <UserPlus size={26} className="shrink-0 text-accent" /> Apply to inspect
+                </h1>
+                <p className="t-small mt-2.5">Enough for us to call you back — the rest happens when we meet. Once you are verified, your number opens the inspector sign-in.</p>
+                <InspectorForm narrow className="mt-6" />
+              </div>
+            ) : user ? (
               <div className="w-full">
                 <h1 className="serif text-[clamp(2rem,4vw,2.6rem)] leading-[1.05] tracking-[-0.035em]">
                   {mismatch ? "That is a different account." : "You are already signed in."}
@@ -153,22 +167,36 @@ export default async function Page({ searchParams }: PageProps<"/signin">) {
             )}
           </div>
 
-          {inspector && !user && (
-            <p className="mt-5 flex max-w-[440px] items-start gap-2 text-[12.5px] leading-snug text-white/55">
-              <CalendarCheck size={14} className="mt-0.5 shrink-0" />
-              Access is limited to inspectors StillYours has verified in person. Attempts from other numbers are refused before any code is sent.
+          {/* right under the door it leads to: nobody has to hunt for how to get on the roster */}
+          {inspector && !applying && user?.role !== "inspector" && (
+            <div className="mt-4 w-full max-w-[440px] rounded-[20px] border border-white/10 bg-white/[0.05] p-5">
+              <div className="flex items-start gap-3.5">
+                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-white/10 text-white"><UserPlus size={17} /></span>
+                <div className="min-w-0">
+                  <div className="text-[15px] font-semibold text-white">Not on the roster yet?</div>
+                  <p className="mt-1 text-[13.5px] leading-snug text-white/60">Apply to inspect homes around Bengaluru. We meet you in person first — then your number opens this door.</p>
+                </div>
+              </div>
+              <Link href={APPLY} className="btn btn-white mt-4 w-full">Apply to join <ArrowRight size={16} /></Link>
+            </div>
+          )}
+          {applying && (
+            <p className="mt-5 text-[13.5px] text-white/60">
+              Already on the roster? <Link href={"/signin?as=inspector" as Route} className="font-medium text-white underline underline-offset-4">Sign in</Link>
             </p>
           )}
         </div>
 
         <p className={cn("t-small text-center", inspector && "text-white/50")}>
           {inspector ? (
-            <>Not an inspector? <Link href="/signin" className="font-medium text-white underline underline-offset-4">Owner sign in</Link> · Want to join? <Link href={"/access?role=inspector" as Route} className="font-medium text-white underline underline-offset-4">Apply</Link></>
+            <>Own a property? <Link href="/signin" className="font-medium text-white underline underline-offset-4">Owner sign in</Link></>
           ) : (
             <>By continuing you agree to our <Link href="/terms" className="underline underline-offset-4">Terms</Link> and <Link href={"/privacy" as Route} className="underline underline-offset-4">Privacy Policy</Link> — your property media stays private and is never sold.</>
           )}
         </p>
       </section>
+      {/* an applicant has no app to install yet */}
+      {!applying && <InstallHint />}
     </main>
   );
 }

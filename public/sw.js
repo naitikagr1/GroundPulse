@@ -10,7 +10,7 @@
    straight to the network, always.
    ════════════════════════════════════════════════════════════════ */
 
-const VERSION = "sy-v1";
+const VERSION = "sy-v2"; // v2: the round logo icons — bumping drops the old cached ones
 const SHELL = `${VERSION}-shell`;
 const OFFLINE = "/offline";
 

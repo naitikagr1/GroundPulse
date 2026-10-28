@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { Route } from "next";
 import { ArrowRight, Check, Minus, ShieldCheck, Sparkles } from "lucide-react";
 import { requireOwner } from "@/lib/auth";
-import { propertyViews } from "@/lib/queries";
+import { freeSpotsLeft, propertyViews } from "@/lib/queries";
 import { Empty, PageHead, Panel, PanelHead, money } from "@/components/app/ui";
 import { FoundingCard } from "@/components/app/FoundingCard";
 import { Reveal } from "@/components/ui/Reveal";
@@ -14,7 +14,7 @@ export const metadata = { title: "Plan & cover" };
 
 export default async function Page() {
   const user = await requireOwner();
-  const views = await propertyViews(user.id);
+  const [views, freeLeft] = await Promise.all([propertyViews(user.id), freeSpotsLeft()]);
   const withPlan = views.filter((v) => v.subscription);
   const without = views.filter((v) => !v.subscription);
   const hasCarePlus = withPlan.some((v) => v.subscription!.planId === "care-plus");
@@ -28,7 +28,7 @@ export default async function Page() {
       />
 
       <div className="grid gap-4">
-        <Reveal><FoundingCard user={user} properties={views.map((v) => v.property)} /></Reveal>
+        <Reveal><FoundingCard user={user} properties={views.map((v) => v.property)} left={freeLeft} firstTime={!views.some((v) => v.visits.length)} /></Reveal>
 
         {withPlan.length === 0 && (
           <Panel><Empty icon={Sparkles} title="No plan running." body="Every visit so far has been a one-off. A yearly plan books the rhythm for you — and stops you having to remember."

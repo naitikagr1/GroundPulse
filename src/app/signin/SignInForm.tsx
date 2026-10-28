@@ -54,7 +54,7 @@ function Inner({ side, restart }: { side: "owner" | "inspector"; restart: () => 
                 <h1 className="serif flex items-center gap-2.5 text-[clamp(1.8rem,4vw,2.3rem)] leading-[1.05] tracking-[-0.035em]">
                   <ShieldCheck size={26} className="shrink-0 text-accent" /> Inspector sign in
                 </h1>
-                <p className="t-small mt-2.5">Only numbers on the StillYours inspector roster open this door. There is no sign-up here — we add you after we have met you.</p>
+                <p className="t-small mt-2.5">Only numbers on the StillYours inspector roster open this door — we add yours after we have met you.</p>
               </>
             ) : (
               <>

@@ -8,6 +8,7 @@ import { SectionHead } from "@/components/shared/SectionHead";
 import { HealthRing } from "@/components/ui/HealthRing";
 import { EASE, viewportOnce } from "@/lib/motion";
 import { cn } from "@/lib/cn";
+import { SHOT } from "@/lib/photos";
 
 const points = [{ l: "Jan", v: 71 }, { l: "Apr", v: 76 }, { l: "Jul", v: 79 }, { l: "Oct", v: 84 }];
 
@@ -32,7 +33,7 @@ function Trend() {
 }
 
 const portfolio = [
-  { n: "Ancestral Apartment", a: "Indiranagar, Bengaluru", s: 84, open: 1, last: "2 days ago", v: "entrance" as const, src: "/photos/living.jpg" },
+  { n: "Ancestral Apartment", a: "Indiranagar, Bengaluru", s: 84, open: 1, last: "2 days ago", v: "entrance" as const, src: SHOT.living },
   { n: "Garden Villa", a: "Whitefield, Bengaluru", s: 62, open: 2, last: "3 weeks ago", v: "balcony" as const, src: "/photos/goa.jpg" },
   { n: "Unit 3 · HSR Layout", a: "Bengaluru", s: 91, open: 0, last: "5 days ago", v: "living" as const, src: "/photos/pune.jpg" },
 ];

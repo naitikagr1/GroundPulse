@@ -21,6 +21,7 @@ import { sameCity } from "@/lib/city";
 import { coverFor, makeQuote } from "@/lib/repair";
 import { liveSub } from "@/lib/plans";
 import { fmtDayDate } from "@/lib/format";
+import { UPCOMING } from "@/lib/queries";
 import { inr } from "@/lib/pricing";
 import { DEPOSIT } from "@/lib/payout";
 import type { InspectorStatus } from "@/lib/types";
@@ -117,6 +118,28 @@ export async function cancelVisitOps(fd: FormData) {
     const v = d.visits.find((x) => x.id === id);
     if (!v || !["scheduled", "assigned"].includes(v.status)) return;
     cancelVisitIn(d, v, "cancelled by StillYours — nobody could make that day");
+  });
+  refresh();
+}
+
+/** A free launch-offer booking ops has called about. Cancelled, it stops
+    counting against the 25 — even with an inspector already on it, who
+    loses the job with no penalty. "Not genuine" also takes the free
+    inspection off the account, so the same owner cannot book it again. */
+export async function cancelFreeVisit(fd: FormData) {
+  await requireAdmin();
+  const id = s(fd, "id", 60);
+  const fake = fd.get("fake") === "1";
+  await mutate((d) => {
+    const v = d.visits.find((x) => x.id === id);
+    if (!v || !v.founding || !(UPCOMING as readonly string[]).includes(v.status)) return;
+    cancelVisitIn(d, v, fake
+      ? "cancelled by StillYours — we could not confirm this booking was genuine"
+      : "cancelled by StillYours — you can book your free inspection again while places last");
+    if (fake) {
+      const u = d.users.find((x) => x.id === v.ownerId);
+      if (u) u.freeRevokedAt = now();
+    }
   });
   refresh();
 }

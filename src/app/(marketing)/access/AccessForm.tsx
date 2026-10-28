@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { ArrowRight, Check, MessageCircle, Smartphone } from "lucide-react";
 import { cn } from "@/lib/cn";
+import { LIMIT } from "@/lib/offer";
 import { InspectorForm } from "./InspectorForm";
 
 /**
@@ -192,9 +193,9 @@ export function AccessForm({ initialRole = "owner" }: { initialRole?: Role }) {
             {role === "owner" && (
             <div className="card bg-ink p-6 text-white sm:p-7">
               <p className="text-[13px] font-medium uppercase tracking-[0.08em] text-white/55">Launch offer · Bengaluru</p>
-              <h2 className="t-3 mt-2 text-[24px] font-medium tracking-[-0.02em]">The first 10 inspections are free.</h2>
+              <h2 className="t-3 mt-2 text-[24px] font-medium tracking-[-0.02em]">The first {LIMIT} inspections are free.</h2>
               <p className="mt-3 text-[14.5px] leading-relaxed text-white/70">
-                One free inspection each for the first ten owners, homes up to 2 BHK. One of the two of us who started StillYours does
+                One free inspection each for the first {LIMIT} owners, whatever the size of the home. One of the two of us who started StillYours does
                 your visit in person, the whole visit is recorded on a body camera, and you get the full video. No card, no deposit.
               </p>
               <Link href="/#founding" className="mt-5 inline-flex items-center gap-1.5 text-[14.5px] font-medium text-white underline underline-offset-4">

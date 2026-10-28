@@ -5,6 +5,7 @@ import { PhoneMore } from "@/components/ui/PhoneMore";
 import { cn } from "@/lib/cn";
 import { bhkKeys, bhkLabel, bringVsNeed, coverage, compare, crew, excluded, extraGroups, fulfilment, included, inr, notes, shotWall, tiers } from "@/lib/cleaning";
 import { BeforeAfter } from "./Shots";
+import { START, START_LABEL } from "@/lib/start";
 
 const refresh = tiers[0];
 const deep = tiers[1];
@@ -156,7 +157,7 @@ export function CleanKit() {
           </ol>
           <div className="mt-6 border-t border-white/10 pt-5">
             <p className="text-[13.5px] leading-relaxed text-white/75">That is the entire list. No keys couriered, no spare set with a neighbour, nobody taking a day off to supervise strangers in your house.</p>
-            <Link href="/access" className="btn btn-white btn-sm mt-4 w-full sm:w-auto">Join the waitlist <ArrowRight size={15} /></Link>
+            <Link href={START} className="btn btn-white btn-sm mt-4 w-full sm:w-auto">{START_LABEL} <ArrowRight size={15} /></Link>
           </div>
         </div>
       </div>
@@ -181,9 +182,9 @@ export function CleanWall() {
       </Reveal>
       <Reveal delay={0.06}>
         <p className="t-small mt-4 max-w-[80ch] text-[13px]">
-          These are our own illustrations of what each surface looks like before and after — drawn so you can see the standard we work to before
-          you book. From your visit onwards they are replaced by the real thing: your rooms, your surfaces, photographed from the same spot at
-          the start and the end of the job, GPS and time stamped, in the report you get within the hour.
+          These are examples we made of what each surface looks like before and after — drawings and staged photos, not a customer&apos;s home —
+          so you can see the standard we work to before you book. From your visit onwards they are replaced by the real thing: your rooms, your
+          surfaces, photographed from the same spot at the start and the end of the job, GPS and time stamped, in the report you get within the hour.
         </p>
       </Reveal>
     </div>
@@ -206,7 +207,7 @@ export function CleanCrew() {
               Good cleaning crews already exist in this city. What doesn&rsquo;t exist, for an owner who isn&rsquo;t in the country, is somebody to let
               them in, stay while they work, tell you the truth about the result and carry the blame if it&rsquo;s wrong. That is the whole job we do.
             </p>
-            <Link href="/access" className="btn btn-accent mt-6">Join the waitlist <ArrowRight size={16} /></Link>
+            <Link href={START} className="btn btn-accent mt-6">{START_LABEL} <ArrowRight size={16} /></Link>
           </div>
           <ol className="swipe grid gap-3 [--swipe-bleed:1.5rem] sm:grid-cols-2">
             {roles.map((r, i) => (
@@ -343,7 +344,7 @@ export function CleanPrices() {
               <div className="text-[18px] font-medium tracking-[-0.02em]">Everything that can be added, and what it costs</div>
               <div className="t-small mt-0.5">Chosen in your quote, before you pay. Nothing is added at the door.</div>
             </div>
-            <Link href="/access" className="btn btn-accent btn-sm shrink-0">Join the waitlist <ArrowRight size={15} /></Link>
+            <Link href={START} className="btn btn-accent btn-sm shrink-0">{START_LABEL} <ArrowRight size={15} /></Link>
           </div>
           <div className="swipe mt-5 grid gap-3 lg:grid-cols-3">
             {extraGroups.map((g) => (

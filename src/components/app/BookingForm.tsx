@@ -10,7 +10,7 @@ import { DayPicker, firstBookable } from "@/components/app/DayPicker";
 import { advanceOf, quote, inr, SLOTS } from "@/lib/quote";
 import { plans } from "@/lib/pricing";
 import { tiers, bhkLabel } from "@/lib/cleaning";
-import { blockedBecause, eligible, hasFreeVisit, qualifies, terms } from "@/lib/offer";
+import { blockedBecause, eligible, hasFreeVisit, qualifies, terms, LIMIT } from "@/lib/offer";
 import { inServiceArea, HOME_CITY } from "@/lib/city";
 import { extraRooms } from "@/lib/rooms";
 import { cn } from "@/lib/cn";
@@ -40,9 +40,11 @@ const Choice = ({ on, onClick, children, className }: { on: boolean; onClick: ()
 );
 
 export function BookingForm({
-  user, properties, planInfo, initialProperty, initialPlan, welcome = false,
+  user, freeLeft, properties, planInfo, initialProperty, initialPlan, welcome = false,
 }: {
-  user: Pick<User, "foundingNo" | "freeVisitUsedAt" | "tz">;
+  user: Pick<User, "freeVisitUsedAt" | "freeRevokedAt" | "tz">;
+  /** launch-offer places still free to book, across every owner */
+  freeLeft: number;
   properties: Property[];
   planInfo: Record<string, PlanInfo>;
   initialProperty?: string;
@@ -50,7 +52,7 @@ export function BookingForm({
   welcome?: boolean;
 }) {
   const [state, submit] = useActionState(bookVisit, { ok: false } as FormState);
-  const offerOpen = hasFreeVisit(user);
+  const offerOpen = hasFreeVisit(user, freeLeft);
 
   /* Where a property's booking should start: its plan if it has one with
      inspections left; the free inspection if it qualifies; else what the
@@ -103,7 +105,7 @@ export function BookingForm({
   const buyPlanId = kind === "plot" ? "plot-once" : kind === "cleaning" ? "cleaning" : usePlan ? plan!.planId : planId;
   /* Shown live as they choose, and re-decided on the server when they
      submit — this copy is for the price on screen, not for the bill. */
-  const founding = !usePlan && eligible(user, property, kind, buyPlanId);
+  const founding = !usePlan && eligible(user, freeLeft, property, kind, buyPlanId);
   const blocked = offerOpen && !founding && !usePlan ? blockedBecause(property, kind, buyPlanId) : null;
   const cleanOk = !!plan && plan.left.cleans > 0 && ((kind === "cleaning" && tierId === "refresh") || (kind === "inspection" && !!adds.cleaning));
   const serviceOk = !!plan && plan.planId === "care-plus" && plan.left.services > 0 && kind === "inspection";
@@ -151,6 +153,8 @@ export function BookingForm({
       {planClean && cleanOk && <input type="hidden" name="planClean" value="on" />}
       {serviceOk && planService.trim() && <input type="hidden" name="planService" value={planService.trim()} />}
       {["cleaning", "deep", "car"].map((k) => <input key={k} type="hidden" name={`add_${k}`} value={adds[k] ?? 0} />)}
+      {/* what the screen promised, so the server can stop rather than charge if the last place has gone */}
+      {founding && <input type="hidden" name="free" value="1" />}
 
       <div className="grid gap-4">
         {/* the launch offer, stated before they start choosing */}
@@ -161,7 +165,7 @@ export function BookingForm({
               <div className="min-w-0">
                 <h2 className="text-[17px] font-semibold text-white">{founding ? "This one is free." : "Your first inspection is free."}</h2>
                 <p className="mt-1 text-[14px] leading-snug text-white/70">
-                  You are owner #{user.foundingNo} of our first ten. One inspection at no cost, body camera included.
+                  {freeLeft === 1 ? `The last of our ${LIMIT} free inspections` : `${freeLeft} of our ${LIMIT} free inspections left`} — one per owner, at no cost, body camera included.
                 </p>
               </div>
             </div>
@@ -274,7 +278,7 @@ export function BookingForm({
                 {plan && <p className="t-small px-1">To move this home onto Care+, use <Link href="/app/plan" className="font-medium text-accent underline underline-offset-4">Plan & cover</Link>.</p>}
                 {extras.length > 0 && !usePlan && (
                   <p className="t-small rounded-[12px] bg-paper px-4 py-3 leading-snug">
-                    This home has {extras.map((e) => `${e.n} ${e.one.toLowerCase()}${e.n > 1 ? "s" : ""}`).join(", ")} past a {bhkLabel[size]} layout — charged per inspection, shown in your total.
+                    This home has {extras.map((e) => `${e.n} ${e.one.toLowerCase()}${e.n > 1 ? "s" : ""}`).join(", ")} past a {bhkLabel[size]} layout — {founding ? "included in your free inspection." : "charged per inspection, shown in your total."}
                   </p>
                 )}
               </div>

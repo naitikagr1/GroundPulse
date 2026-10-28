@@ -1,18 +1,19 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import {
-  CalendarClock, CheckCircle2, FileText, IndianRupee, KeyRound, LogOut, MessageSquare, Phone, UserRound, Wrench,
+  CalendarClock, CheckCircle2, FileText, Gift, IndianRupee, KeyRound, LogOut, MessageSquare, Phone, UserRound, Wrench,
 } from "lucide-react";
 import { isOps } from "@/lib/auth";
 import { APPS_LIVE } from "@/lib/flags";
 import { netPay, opsView } from "@/lib/ops";
 import {
-  assignVisit, attachQuote, advanceRepair, cancelVisitOps, closeTicket, markPaid, markPayoutSent, markRefunded,
+  assignVisit, attachQuote, advanceRepair, cancelFreeVisit, cancelVisitOps, closeTicket, markPaid, markPayoutSent, markRefunded,
   opsLogout, releaseReport, replyTicket, setInspectorStatus, unlockCheckIn, waivePenalty,
 } from "@/lib/opsActions";
 import { STATUS_COPY } from "@/lib/field";
 import { penaltyLine } from "@/lib/jobs";
 import { DEPOSIT } from "@/lib/payout";
+import { BEFORE_APP, LIMIT } from "@/lib/offer";
 import { prettyPhone } from "@/lib/phone";
 import { fmtDate, fmtDayDate, relative } from "@/lib/format";
 import { Panel, PanelHead, Stat, money } from "@/components/app/ui";
@@ -39,15 +40,15 @@ export default async function Ops() {
 
   return (
     <main className="min-h-dvh bg-paper">
-      <div className="mx-auto grid max-w-[920px] gap-4 px-4 py-6">
-        <header className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <p className="t-label">StillYours ops · {fmtDayDate(new Date().toISOString())}</p>
-            <h1 className="serif mt-1 text-[clamp(1.7rem,5vw,2.2rem)] leading-[1.06] tracking-[-0.035em]">
-              {waiting ? `${waiting} thing${waiting === 1 ? "" : "s"} waiting on you.` : "Nothing waiting on you."}
-            </h1>
+      <div className="mx-auto grid max-w-[920px] gap-4 px-4 py-6 [&>*]:min-w-0">
+        <header>
+          <div className="flex items-center justify-between gap-3">
+            <p className="t-label min-w-0">StillYours ops · {fmtDayDate(new Date().toISOString())}</p>
+            <form action={opsLogout} className="shrink-0"><button className="btn btn-white btn-sm"><LogOut size={14} /> Lock</button></form>
           </div>
-          <form action={opsLogout}><button className="btn btn-white btn-sm"><LogOut size={14} /> Lock</button></form>
+          <h1 className="serif mt-1.5 text-[clamp(1.7rem,5vw,2.2rem)] leading-[1.06] tracking-[-0.035em]">
+            {waiting ? `${waiting} thing${waiting === 1 ? "" : "s"} waiting on you.` : "Nothing waiting on you."}
+          </h1>
         </header>
 
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
@@ -60,7 +61,7 @@ export default async function Ops() {
         {/* ── stuck at the door ─────────────────────────────── */}
         {o.locked.length > 0 && (
           <Panel className="border-fail/30">
-            <PanelHead title={<span className="flex items-center gap-2 text-fail"><KeyRound size={15} /> Locked at the door</span>} meta="Five wrong codes. Call the owner, then unlock." />
+            <PanelHead wrapMeta title={<span className="flex items-center gap-2 text-fail"><KeyRound size={15} /> Locked at the door</span>} meta="Five wrong codes. Call the owner, then unlock." />
             <ul className="divide-y divide-line">
               {o.locked.map(({ v, property, inspector, ownerPhone }) => (
                 <li key={v.id} className="flex flex-wrap items-center gap-3 px-5 py-3.5">
@@ -79,7 +80,7 @@ export default async function Ops() {
         {/* ── nobody on it ──────────────────────────────────── */}
         {o.unassigned.length > 0 && (
           <Panel>
-            <PanelHead title={<span className="flex items-center gap-2"><CalendarClock size={15} /> Needs an inspector</span>} meta={`Today and the next two days, and anything missed`} />
+            <PanelHead wrapMeta title={<span className="flex items-center gap-2"><CalendarClock size={15} /> Needs an inspector</span>} meta={`Today and the next two days, and anything missed`} />
             <ul className="divide-y divide-line">
               {o.unassigned.map(({ v, property, ownerPhone, gone, who }) => (
                 <li key={v.id} className="grid gap-2 px-5 py-4">
@@ -115,10 +116,57 @@ export default async function Ops() {
           </Panel>
         )}
 
+        {/* ── free inspections: call, and cancel what is not genuine ── */}
+        {o.free.open.length > 0 && (
+          <Panel>
+            <PanelHead
+              wrapMeta
+              title={<span className="flex items-center gap-2"><Gift size={15} /> Free inspections</span>}
+              meta={`${o.free.booked} of ${LIMIT} booked, ${BEFORE_APP} of them on WhatsApp · call each owner before the day`}
+            />
+            <ul className="divide-y divide-line">
+              {o.free.open.map(({ v, property, owner, ownerPhone, inspector, inspectorPhone }) => {
+                const who = owner?.name || "the owner";
+                const job = inspector ? ` ${inspector.name} has accepted it and loses the job — call them.` : "";
+                return (
+                  <li key={v.id} className="grid gap-2 px-5 py-4">
+                    <div className="flex flex-wrap items-baseline justify-between gap-2">
+                      <div className="text-[14.5px] font-medium">{property?.label ?? "—"} · <span className="font-mono text-[13px]">{v.ref}</span></div>
+                      <div className="flex flex-wrap gap-1.5">
+                        {property && <span className="chip">{property.size} BHK</span>}
+                        <span className={cn("chip", inspector ? "chip-accent" : "chip-warn")}>{inspector ? `Accepted · ${inspector.name}` : "No inspector yet"}</span>
+                      </div>
+                    </div>
+                    <div className="t-small">
+                      {owner?.name || "No name"}
+                      {ownerPhone && <> · <a href={tel(ownerPhone)} className="underline underline-offset-2">{prettyPhone(ownerPhone)}</a></>}
+                      {owner?.email && <> · {owner.email}</>}
+                      {owner && <> · signed up {relative(owner.createdAt)}</>}
+                    </div>
+                    <div className="t-small">{fmtDayDate(v.scheduledFor)} · {v.slot} · {property?.address}{property?.city && `, ${property.city}`} · booked {relative(v.createdAt)}</div>
+                    <div className="flex flex-wrap items-center gap-2 pt-0.5">
+                      {inspectorPhone && <a href={tel(inspectorPhone)} className="btn btn-white btn-sm"><Phone size={13} /> {inspector?.name}</a>}
+                      <ConfirmForm action={cancelFreeVisit} ask={`Cancel ${v.ref}? The place goes back to the ${LIMIT}, and ${who} can book their free inspection again.${job}`}>
+                        <input type="hidden" name="id" value={v.id} />
+                        <button className="btn btn-white btn-sm">Cancel</button>
+                      </ConfirmForm>
+                      <ConfirmForm action={cancelFreeVisit} ask={`Cancel ${v.ref} as not genuine? The place goes back to the ${LIMIT}, and this account can never book a free inspection again.${job}`}>
+                        <input type="hidden" name="id" value={v.id} />
+                        <input type="hidden" name="fake" value="1" />
+                        <button className="btn btn-white btn-sm border-fail/30 text-fail">Cancel as fake</button>
+                      </ConfirmForm>
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          </Panel>
+        )}
+
         {/* ── pay ───────────────────────────────────────────── */}
         {o.pay.length > 0 && (
           <Panel>
-            <PanelHead title={<span className="flex items-center gap-2"><IndianRupee size={15} /> Pay inspectors</span>} meta="Send to their UPI, then mark it sent" />
+            <PanelHead wrapMeta title={<span className="flex items-center gap-2"><IndianRupee size={15} /> Pay inspectors</span>} meta="Send to their UPI, then mark it sent" />
             <ul className="divide-y divide-line">
               {o.pay.map(({ ins, jobs, refunds, total }) => (
                 <li key={ins.id} className="grid gap-2.5 px-5 py-4">
@@ -133,9 +181,9 @@ export default async function Ops() {
                   </div>
                   <ul className="grid gap-1 text-[13px]">
                     {jobs.map((v) => (
-                      <li key={v.id} className="flex justify-between gap-3">
+                      <li key={v.id} className="flex flex-wrap justify-between gap-x-3">
                         <span className="text-text-2"><span className="font-mono">{v.ref}</span> · {fmtDate(v.scheduledFor)}</span>
-                        <span className="shrink-0 tabular-nums">
+                        <span className="tabular-nums">
                           {money(v.payoutInr)}
                           {(v.overtimeInr ?? 0) > 0 && <> + {money(v.overtimeInr)} OT</>}
                           {(v.depositHeldInr ?? 0) > 0 && <span className="text-text-3"> − {money(v.depositHeldInr!)} deposit</span>}
@@ -172,7 +220,7 @@ export default async function Ops() {
         {/* ── probation reports ─────────────────────────────── */}
         {o.review.length > 0 && (
           <Panel>
-            <PanelHead title={<span className="flex items-center gap-2"><FileText size={15} /> Reports to read</span>} meta="On probation — the owner sees nothing until you release it" />
+            <PanelHead wrapMeta title={<span className="flex items-center gap-2"><FileText size={15} /> Reports to read</span>} meta="On probation — the owner sees nothing until you release it" />
             <ul className="divide-y divide-line">
               {o.review.map(({ r, property, inspector, flagged }) => (
                 <li key={r.id} className="grid gap-2 px-5 py-4">
@@ -206,7 +254,7 @@ export default async function Ops() {
         {/* ── messages ──────────────────────────────────────── */}
         {o.tickets.length > 0 && (
           <Panel>
-            <PanelHead title={<span className="flex items-center gap-2"><MessageSquare size={15} /> Messages</span>} meta="From owners, oldest first" />
+            <PanelHead wrapMeta title={<span className="flex items-center gap-2"><MessageSquare size={15} /> Messages</span>} meta="From owners, oldest first" />
             <ul className="divide-y divide-line">
               {o.tickets.map(({ t, owner, property }) => (
                 <li key={t.id} className="grid gap-2 px-5 py-4">
@@ -230,7 +278,7 @@ export default async function Ops() {
         {/* ── money in and out ──────────────────────────────── */}
         {o.money.length > 0 && (
           <Panel>
-            <PanelHead title={<span className="flex items-center gap-2"><IndianRupee size={15} /> Bills</span>} meta="UPI payments to confirm, refunds to send" />
+            <PanelHead wrapMeta title={<span className="flex items-center gap-2"><IndianRupee size={15} /> Bills</span>} meta="UPI payments to confirm, refunds to send" />
             <ul className="divide-y divide-line">
               {o.money.map(({ i, owner, property }) => (
                 <li key={i.id} className="flex flex-wrap items-center gap-3 px-5 py-3.5">
@@ -259,7 +307,7 @@ export default async function Ops() {
         {/* ── quotes and repairs ────────────────────────────── */}
         {(o.quotes.length > 0 || o.repairs.length > 0) && (
           <Panel>
-            <PanelHead title={<span className="flex items-center gap-2"><Wrench size={15} /> Repairs</span>} meta="Price what the inspector could not, and confirm the owner's day" />
+            <PanelHead wrapMeta title={<span className="flex items-center gap-2"><Wrench size={15} /> Repairs</span>} meta="Price what the inspector could not, and confirm the owner's day" />
             <ul className="divide-y divide-line">
               {o.quotes.map(({ i, property }) => (
                 <li key={i.id} className="grid gap-2 px-5 py-4">
@@ -300,7 +348,7 @@ export default async function Ops() {
 
         {/* ── the people ────────────────────────────────────── */}
         <Panel>
-          <PanelHead title={<span className="flex items-center gap-2"><UserRound size={15} /> Inspectors</span>} meta={`${o.inspectors.length} on the roster`} />
+          <PanelHead wrapMeta title={<span className="flex items-center gap-2"><UserRound size={15} /> Inspectors</span>} meta={`${o.inspectors.length} on the roster`} />
           <ul className="divide-y divide-line">
             {o.inspectors.map(({ ins, phone, held, onSite, done, open }) => (
               <li key={ins.id} className="grid gap-2.5 px-5 py-4">

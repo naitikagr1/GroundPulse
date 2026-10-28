@@ -1,5 +1,5 @@
 import { requireOwner } from "@/lib/auth";
-import { properties, subscriptions } from "@/lib/queries";
+import { freeSpotsLeft, properties, subscriptions } from "@/lib/queries";
 import { BookingForm, type PlanInfo } from "@/components/app/BookingForm";
 import { PageHead } from "@/components/app/ui";
 import { Steps } from "@/components/app/Steps";
@@ -10,7 +10,7 @@ export const metadata = { title: "Book a visit" };
 export default async function Page({ searchParams }: PageProps<"/app/book">) {
   const user = await requireOwner();
   const sp = await searchParams;
-  const [mine, subs] = await Promise.all([properties(user.id), subscriptions(user.id)]);
+  const [mine, subs, freeLeft] = await Promise.all([properties(user.id), subscriptions(user.id), freeSpotsLeft()]);
   const welcome = sp.welcome === "1";
 
   /* What each property's plan still has to give — the form offers those
@@ -31,6 +31,7 @@ export default async function Page({ searchParams }: PageProps<"/app/book">) {
       />
       <BookingForm
         user={user}
+        freeLeft={freeLeft}
         properties={mine}
         planInfo={planInfo}
         initialProperty={typeof sp.property === "string" ? sp.property : undefined}

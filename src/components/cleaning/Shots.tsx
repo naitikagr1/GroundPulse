@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { cn } from "@/lib/cn";
 import type { ShotName } from "@/lib/cleaning";
+import { CLEAN } from "@/lib/photos";
 
 export type { ShotName };
 
@@ -638,11 +639,15 @@ export function BeforeAfter({
   start?: number;
 }) {
   const [x, setX] = useState(start);
+  /* the surface's photo pair when there is one (lib/photos), the drawing until then */
+  const pair = CLEAN[name];
+  const before = srcBefore ?? pair?.before;
+  const after = srcAfter ?? pair?.after;
   return (
     <figure className={cn("group relative select-none overflow-hidden rounded-[12px] bg-[#15181c] ring-1 ring-black/10", className)} style={{ aspectRatio: ratio }}>
-      <Frame name={name} dirty={false} src={srcAfter} />
+      <Frame name={name} dirty={false} src={after} />
       <div className="absolute inset-0" style={{ clipPath: `inset(0 ${100 - x}% 0 0)` }}>
-        <Frame name={name} dirty src={srcBefore} />
+        <Frame name={name} dirty src={before} />
       </div>
 
       <span className="pointer-events-none absolute left-2 top-2 rounded-full bg-black/65 px-2 py-0.5 text-[10.5px] font-medium text-white backdrop-blur">Before</span>

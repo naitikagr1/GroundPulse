@@ -63,12 +63,19 @@ export function EntryCode({
           </button>
         </div>
       </div>
+      {/* when and to whom — always said, because sending it at the wrong
+          moment is the one way this code can go wrong */}
+      <p className={cn("mt-2.5 text-[13px] leading-snug", dark ? "text-white/70" : "text-accent-2/85")}>
+        <b className={dark ? "text-white" : "text-accent-2"}>When to send it: </b>
+        {exit
+          ? <>only once the visit is over and the keys are back with {keyHolder || "you or your caretaker"}. Give it to {keyHolder ? keyHolder : "whoever takes the keys back"}, or read it out yourself on the call — never before.</>
+          : <>on the day, when the inspector calls from your door. {keyHolder ? `Send it to ${keyHolder}, or read it out yourself.` : "Read it out yourself, or send it to whoever lets them in."}</>}
+      </p>
       {!compact && (
-        <p className={cn("mt-2 text-[13px] leading-snug", dark ? "text-white/65" : "text-accent-2/80")}>
+        <p className={cn("mt-1.5 text-[12.5px] leading-snug", dark ? "text-white/55" : "text-accent-2/65")}>
           {exit
-            ? <>Give it to {keyHolder || "whoever takes the keys back"} — or read it out yourself — once the keys are back in the right hands. The visit only closes with it, and anything you have not decided closes with it.</>
-            : <>{keyHolder ? `Send it to ${keyHolder}, or read it out yourself when they call.` : "Read it out when the inspector calls from the door, or send it to whoever lets them in."}{" "}
-              The checklist does not open without it — so nobody gets in on a code you did not give.</>}
+            ? "The inspector cannot close the visit without it — and anything you have not decided closes with it."
+            : "The checklist does not open without it, so nobody gets in on a code you did not give."}
         </p>
       )}
     </div>

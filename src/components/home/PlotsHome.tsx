@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowRight, Check, LandPlot } from "lucide-react";
 import { Reveal } from "@/components/ui/Reveal";
 import { MapCard } from "@/components/ui/MapCard";
+import { START, START_LABEL } from "@/lib/start";
 
 /** Plots & land — same weight as homes, on the home page. */
 export function PlotsHome() {
@@ -21,7 +22,7 @@ export function PlotsHome() {
               </div>
               <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
                 <div className="mr-auto"><div className="text-[30px] font-medium leading-none tracking-[-0.04em]">₹1,999 <span className="text-[14px] font-normal text-white/60">per visit</span></div><div className="mt-1 text-[12.5px] text-white/60">Repeat every quarter · cancel anytime · report within the hour</div></div>
-                <Link href="/access" className="btn btn-white">Join the waitlist <ArrowRight size={16} /></Link>
+                <Link href={START} className="btn btn-white">{START_LABEL} <ArrowRight size={16} /></Link>
                 <Link href="/plots" className="btn btn-line text-white">All about plots</Link>
               </div>
             </div>

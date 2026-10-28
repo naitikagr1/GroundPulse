@@ -67,6 +67,11 @@ export function overtimeFor(startedAt: string | null, endedAt: string | null, fr
    below zero is just half of the next jobs' pay. */
 export const DEPOSIT = { target: 5000, unlock: 1500, rate: 0.5 } as const;
 
+/** How many jobs an inspector may hold, and what a broken promise costs —
+    enforced in lib/jobs. */
+export const HOLD = { max: 5, untilUnlock: 2, perDay: 3 } as const;
+export const PENALTY = { noShow: 250, lateRelease: 150, freeReleaseHours: 24, enRouteGraceMinutes: 45, pauseAfter: 2, pauseWindowDays: 30 } as const;
+
 /** A four-digit code the owner reads out at the door. Deliberately not
     six: it is spoken over a bad line, not typed from an SMS. */
 export const newOtp = () => String(Math.floor(1000 + Math.random() * 9000));

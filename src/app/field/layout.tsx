@@ -5,6 +5,7 @@ import { InspectorProfileForm } from "@/components/field/InspectorProfileForm";
 import { requireInspector } from "@/lib/auth";
 import { inspectorFor, STATUS_COPY } from "@/lib/field";
 import { FieldShell } from "@/components/field/FieldShell";
+import { InstallHint } from "@/components/app/InstallHint";
 import { doSignOut } from "@/lib/actions";
 import { notFound } from "next/navigation";
 import { APPS_LIVE } from "@/lib/flags";
@@ -57,6 +58,7 @@ export default async function FieldLayout({ children }: LayoutProps<"/field">) {
   return (
     <FieldShell initials={ins.initials} rating={ins.rating} statusLabel={copy.label} statusTone={copy.tone}>
       {children}
+      <InstallHint />
     </FieldShell>
   );
 }

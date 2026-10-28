@@ -1,10 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import { ArrowRight, Check } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { Field, input } from "./AccessForm";
+import { Vetting } from "./Vetting";
 
 /**
  * Inspector waitlist.
@@ -15,13 +15,8 @@ import { Field, input } from "./AccessForm";
  * what applying leads to so that anyone unwilling stops here.
  */
 
-const whatItMeans = [
-  "We meet you in person in Bengaluru and check your original Aadhaar, PAN and address proof.",
-  "Police verification is filed, and two references are actually called.",
-  "You wear a body camera on every visit, and your first two visits are done beside one of the founders.",
-];
-
-export function InspectorForm() {
+/** `narrow` stacks every field, for the card on the inspector sign-in. */
+export function InspectorForm({ narrow = false, className = "mt-8" }: { narrow?: boolean; className?: string }) {
   const [sent, setSent] = useState(false);
   const [sending, setSending] = useState(false);
   const [sendError, setSendError] = useState<string | null>(null);
@@ -61,20 +56,20 @@ export function InspectorForm() {
 
   if (sent) {
     return (
-      <div className="mt-8 rounded-[16px] bg-accent-tint p-8 text-center">
+      <div className={cn("rounded-[16px] bg-accent-tint p-8 text-center", className)}>
         <span className="mx-auto grid h-12 w-12 place-items-center rounded-full bg-accent text-white"><Check size={22} strokeWidth={3} /></span>
-        <h2 className="t-3 mt-4 text-[22px] font-medium">Thank you — we have your details.</h2>
+        <h2 className="t-3 mt-4 text-[22px] font-medium">Thank you — we have your application.</h2>
         <p className="t-body mx-auto mt-2 max-w-[42ch] text-[15px]">
-          We are not taking on inspectors yet — the two of us are doing the first visits ourselves. When we start, you are on the
-          list and we will call you.
+          We will call you on this number to set a time to meet in person. Once we have met and checked your documents, your
+          number opens the inspector sign-in.
         </p>
       </div>
     );
   }
 
   return (
-    <form onSubmit={submitApplication} className="mt-8 grid gap-5">
-      <div className="grid gap-5 sm:grid-cols-2">
+    <form onSubmit={submitApplication} className={cn("grid gap-5", className)}>
+      <div className={cn("grid gap-5", !narrow && "sm:grid-cols-2")}>
         <Field label="Your name">
           <input name="name" required autoComplete="name" className={input} placeholder="Full name" />
         </Field>
@@ -87,7 +82,7 @@ export function InspectorForm() {
         <input name="email" type="email" required autoComplete="email" className={input} placeholder="you@example.com" />
       </Field>
 
-      <div className="grid gap-5 sm:grid-cols-2">
+      <div className={cn("grid gap-5", !narrow && "sm:grid-cols-2")}>
         <Field label="City">
           <input name="city" required defaultValue="Bengaluru" className={input} />
         </Field>
@@ -103,23 +98,10 @@ export function InspectorForm() {
       {/* A real person never sees or fills this. */}
       <input name="company" tabIndex={-1} autoComplete="off" aria-hidden className="hidden" />
 
-      <div className="rounded-[12px] border border-line-2 p-4">
-        <div className="text-[14px] font-medium">What applying leads to</div>
-        <ul className="mt-2.5 grid gap-2">
-          {whatItMeans.map((t) => (
-            <li key={t} className="flex gap-2.5 text-[14px] leading-relaxed text-text-2">
-              <span className="mt-[7px] h-[5px] w-[5px] shrink-0 rounded-full bg-accent" />
-              {t}
-            </li>
-          ))}
-        </ul>
-        <Link href="/network" className="mt-3 inline-flex items-center gap-1.5 text-[14px] font-medium text-accent underline underline-offset-4">
-          How we verify every inspector <ArrowRight size={14} />
-        </Link>
-      </div>
+      <Vetting />
 
       <button type="submit" disabled={sending} className="btn btn-accent w-full disabled:opacity-60">
-        {sending ? "Sending…" : <>Join the list <ArrowRight size={16} /></>}
+        {sending ? "Sending…" : <>Send my application <ArrowRight size={16} /></>}
       </button>
 
       {sendError && (

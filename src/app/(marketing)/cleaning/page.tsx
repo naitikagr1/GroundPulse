@@ -11,6 +11,7 @@ import { CleanCompare, CleanCrew, CleanIncluded, CleanKit, CleanPrices, CleanWal
 import { FAQ } from "@/components/home/FAQ";
 import { CTA } from "@/components/home/CTA";
 import { inr, tiers } from "@/lib/cleaning";
+import { START, START_LABEL } from "@/lib/start";
 
 export const metadata: Metadata = {
   title: "Home Cleaning When Nobody Is Home",
@@ -42,7 +43,7 @@ export default function Page() {
           ))}
         </Reveal>
         <Reveal delay={0.16} className="mt-7 flex flex-wrap items-center justify-center gap-3">
-          <Link href="/access" className="btn btn-accent">Join the waitlist <ArrowRight size={16} /></Link>
+          <Link href={START} className="btn btn-accent">{START_LABEL} <ArrowRight size={16} /></Link>
           <Link href="#prices" className="btn btn-white">See every price</Link>
         </Reveal>
       </PageHero>
@@ -66,7 +67,7 @@ export default function Page() {
             eyebrow="Prices"
             title={<span id="prices-title">Every number, before you start.</span>}
             lede="Both tiers, all five sizes, and every single thing that can be added — on one screen. You pick what you want in the quote; nothing appears at the door."
-            action={<Link href="/access" className="btn btn-accent btn-sm">Join the waitlist <ArrowRight size={15} /></Link>}
+            action={<Link href={START} className="btn btn-accent btn-sm">{START_LABEL} <ArrowRight size={15} /></Link>}
           />
           <div className="mt-8"><CleanPrices /></div>
         </div>

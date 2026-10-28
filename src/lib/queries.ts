@@ -13,6 +13,7 @@ import { liveSub } from "@/lib/plans";
 import { todayKey } from "@/lib/format";
 import type { DB, Invoice, Issue, Property, Report, Subscription, Ticket, Visit } from "@/lib/types";
 import { balanceDue } from "@/lib/payments";
+import { spotsLeft } from "@/lib/offer";
 
 const byDateDesc = (a: string, b: string) => (a < b ? 1 : -1);
 
@@ -199,6 +200,13 @@ export async function subscriptions(ownerId: string) {
 export async function tickets(ownerId: string): Promise<Ticket[]> {
   const d = await db();
   return d.tickets.filter((t) => t.ownerId === ownerId).sort((a, b) => byDateDesc(a.createdAt, b.createdAt));
+}
+
+/** How many free launch-offer inspections are left to book. The places
+    are shared by every owner, so this is the one read that is not scoped
+    to one — and only the count leaves here. */
+export async function freeSpotsLeft() {
+  return spotsLeft((await db()).visits);
 }
 
 export async function inspectorsById() {

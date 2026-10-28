@@ -11,6 +11,8 @@ import { addDays, todayKey } from "@/lib/format";
 import { CAN_WORK, LIVE } from "@/lib/field";
 import { HELD } from "@/lib/jobs";
 import { sameCity } from "@/lib/city";
+import { freeBooked } from "@/lib/offer";
+import { UPCOMING } from "@/lib/queries";
 import type { Inspector, Visit } from "@/lib/types";
 
 const DONE: Visit["status"][] = ["submitted", "ready", "closed"];
@@ -89,6 +91,23 @@ export async function opsView() {
     .filter((i) => i.repair?.status === "requested" && !!i.repair.scheduledFor)
     .map((i) => ({ i, property: prop(i.propertyId) }));
 
+  /* free launch-offer bookings still to happen — the ones ops can call
+     about and cancel if they are not genuine. A cancelled one stops
+     counting against the 25. */
+  const free = {
+    booked: freeBooked(d.visits),
+    open: d.visits
+      .filter((v) => v.founding && (UPCOMING as readonly string[]).includes(v.status))
+      .sort((a, b) => (a.scheduledFor < b.scheduledFor ? -1 : 1))
+      .map((v) => {
+        const ins = v.inspectorId ? inspector(v.inspectorId) : undefined;
+        return {
+          v, property: prop(v.propertyId), owner: person(v.ownerId), ownerPhone: phoneOf(v.ownerId),
+          inspector: ins, inspectorPhone: ins ? (ins.userId ? person(ins.userId)?.phone : "") || ins.phone : "",
+        };
+      }),
+  };
+
   const inspectors = d.inspectors.map((ins: Inspector) => ({
     ins,
     phone: (ins.userId ? person(ins.userId)?.phone : "") || ins.phone,
@@ -98,5 +117,5 @@ export async function opsView() {
     open: (ins.penalties ?? []).filter((p) => !p.waivedAt).reverse(),
   }));
 
-  return { pay, locked, review, unassigned, tickets, money, quotes, repairs, inspectors };
+  return { pay, locked, review, unassigned, free, tickets, money, quotes, repairs, inspectors };
 }

@@ -7,6 +7,7 @@ import { Bell, Camera, Check, ChevronRight, Flag, MapPin, Upload, X } from "luci
 import { EvidenceFrame } from "@/components/ui/EvidenceFrame";
 import { HealthRing } from "@/components/ui/HealthRing";
 import { cn } from "@/lib/cn";
+import { BOX, SHOT } from "@/lib/photos";
 
 /* ────────────────────────────────────────────────────────────────
    "Living" product mocks for the home page. Each pair of cards plays a
@@ -326,8 +327,8 @@ export function InspectReportLive() {
                   <motion.div className="mt-3 grid grid-cols-4 gap-1.5" initial="hidden" animate="show" variants={{ show: { transition: { staggerChildren: 0.09, delayChildren: 0.2 } }, hidden: {} }}>
                     {[
                       <EvidenceFrame key="k" variant="kitchen" dense tone="pass" id="0398" room="Kitchen" time="13:51" />,
-                      <EvidenceFrame key="b" variant="bathroom" dense id="0412" room="Bath" time="14:02" box={[38, 68, 30, 16]} boxLabel="Leak" />,
-                      <EvidenceFrame key="d" variant="bedroom" dense tone="attn" id="0406" room="Bed" time="13:57" box={[46, 30, 8, 14]} boxLabel="Lock" />,
+                      <EvidenceFrame key="b" variant="bathroom" src={SHOT.bathLeak} dense id="0412" room="Bath" time="14:02" box={BOX.bathLeak} boxLabel="Leak" />,
+                      <EvidenceFrame key="d" variant="bedroom" src={SHOT.bedroom} dense tone="attn" id="0406" room="Bed" time="13:57" box={BOX.bedroomLock} boxLabel="Lock" />,
                       <EvidenceFrame key="y" variant="balcony" dense tone="pass" id="0421" room="Balcony" time="14:11" />,
                     ].map((el, i) => <motion.div key={i} variants={{ hidden: { opacity: 0, y: 10, scale: 0.96 }, show: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.5, ease: EASE } } }}>{el}</motion.div>)}
                   </motion.div>

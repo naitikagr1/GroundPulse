@@ -50,7 +50,11 @@ export const metadata: Metadata = {
   /* Added to an iPhone home screen this opens full screen, with the cream
      ground running under the status bar rather than a white Safari strip. */
   appleWebApp: { capable: true, title: "StillYours", statusBarStyle: "default" },
-  icons: { icon: "/icons/icon-192.png", apple: "/apple-touch-icon.png" },
+  /* the round logo in the tab; iOS gets a full cream tile, since it rounds the corners itself */
+  icons: {
+    icon: [{ url: "/icons/icon-32.png", sizes: "32x32" }, { url: "/icons/icon-192.png", sizes: "192x192" }],
+    apple: "/apple-touch-icon.png",
+  },
   /* Next emits the modern `mobile-web-app-capable`, which iOS only started
      honouring in 16.4. The deprecated Apple spelling is what an older iPhone
      reads, and it is the difference between a full-screen app and a Safari

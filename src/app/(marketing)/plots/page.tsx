@@ -10,6 +10,7 @@ import { MapCard } from "@/components/ui/MapCard";
 import { Relax } from "@/components/shared/Relax";
 import { FAQ } from "@/components/home/FAQ";
 import { CTA } from "@/components/home/CTA";
+import { START, START_LABEL } from "@/lib/start";
 
 export const metadata: Metadata = {
   title: "Plot & Land Inspection in Bengaluru, ₹1,999",
@@ -40,7 +41,7 @@ export default function Page() {
       <JsonLd data={serviceLd({ name: "Plot and land inspection", serviceType: "Land inspection", path: "/plots", description: "A full boundary walk with a GPS track, photos and video at every corner, fence, gate and signboard, and a flag on any encroachment or unauthorised construction." })} />
       <PageHero eyebrow="Plots & land" title={<>Your land, walked every quarter.<br className="hidden md:block" /> Proof of every corner.</>} lede="Empty plots get occupied, fenced, dumped on and built over — quietly, for years. A police-verified inspector walks the boundary, photographs every corner with GPS, and shows you exactly what's there today.">
         <Reveal delay={0.1} className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-          <Link href="/access" className="btn btn-accent">Join the waitlist <ArrowRight size={16} /></Link>
+          <Link href={START} className="btn btn-accent">{START_LABEL} <ArrowRight size={16} /></Link>
           <Link href="/sample-report" className="btn btn-white">See a plot report</Link>
         </Reveal>
         <p className="mt-4 text-[13.5px] text-text-2">Report within the hour · repeat every quarter · cancel free until the day before · live in Bengaluru</p>
@@ -74,7 +75,7 @@ export default function Page() {
                 <ul className="mt-5 space-y-2 text-[14.5px] text-white/90">
                   {["Full boundary walk, GPS track attached", "Photo + video at every corner, fence, gate, signboard", "Encroachment, construction, dumping, notices checked", "Report within the hour with a photo map", "'No change' vs. last visit, or exactly what changed", "Repeat every quarter — cancel anytime · Prepay 4 for ₹6,999"].map((t) => <li key={t} className="flex items-start gap-2.5"><span className="mt-[3px] grid h-[18px] w-[18px] shrink-0 place-items-center rounded-full bg-white/15"><Check size={11} strokeWidth={3} /></span>{t}</li>)}
                 </ul>
-                <div className="mt-6 flex flex-col gap-3 sm:flex-row"><Link href="/access" className="btn btn-white">Join the waitlist <ArrowRight size={16} /></Link><Link href="/sample-report" className="btn btn-line text-white">See a plot report</Link></div>
+                <div className="mt-6 flex flex-col gap-3 sm:flex-row"><Link href={START} className="btn btn-white">{START_LABEL} <ArrowRight size={16} /></Link><Link href="/sample-report" className="btn btn-line text-white">See a plot report</Link></div>
               </div>
               <div className="grid gap-3">
                 {[[Fence, "Found something?", "Signboard install, fencing, boundary marking or a lawyer's notice — verified pros, quote + 15%, you approve."], [ShieldCheck, "Same trust chain as homes", "Police-verified inspector, GPS + time on every photo, and we fix what we damage."], [Clock, "Report within the hour", "Boundary walk, photo map and every corner — in your inbox the same morning."]].map(([I, t, b]) => { const Icon = I as typeof Fence; return <div key={t as string} className="flex gap-3 rounded-[14px] bg-white/[0.07] p-4"><span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-white/10"><Icon size={16} /></span><div><div className="text-[15px] font-medium">{t as string}</div><div className="mt-1 text-[13px] text-white/65">{b as string}</div></div></div>; })}

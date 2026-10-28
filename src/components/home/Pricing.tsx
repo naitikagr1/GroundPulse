@@ -10,6 +10,7 @@ import { Relax } from "@/components/shared/Relax";
 import { cn } from "@/lib/cn";
 import { bhkKeys, bhkLabel, coverage, tiers as cleanTiers } from "@/lib/cleaning";
 import { FoundingOffer } from "@/components/home/FoundingOffer";
+import { START, START_LABEL } from "@/lib/start";
 
 const assetIcon = { home: Home, plot: LandPlot, car: Car } as const;
 const addOnIcon = { cleaning: Sparkles, deep: Sparkles, car: Car, plot: LandPlot } as const;
@@ -103,7 +104,7 @@ export function Pricing({ full }: { full?: boolean }) {
                     {coverage["3"].bed} bed · {coverage["3"].bath} bath · {coverage["3"].balcony} balcony on a 3 BHK, plus living and kitchen. Or add it to a visit you already have for +{inr(t.rider["3"])}.
                   </p>
                   <div className="mt-auto pt-5">
-                    <Link href="/access" className={cn("btn w-full", lead ? "btn-white" : "btn-accent")}>Join the waitlist <ArrowRight size={16} /></Link>
+                    <Link href={START} className={cn("btn w-full", lead ? "btn-white" : "btn-accent")}>{START_LABEL} <ArrowRight size={16} /></Link>
                     <Link href="/cleaning" className={cn("mt-2 flex items-center justify-center gap-1.5 py-1 text-[13px] font-medium hover:underline", lead ? "text-white/85" : "text-accent-2")}>
                       How we clean, room by room <ArrowRight size={13} />
                     </Link>
@@ -143,7 +144,7 @@ export function Pricing({ full }: { full?: boolean }) {
                     <div className={cn("rounded-[12px] px-3.5 py-2.5", p.popular ? "bg-white/12" : "bg-beige")}><div className={cn("text-[11.5px]", p.popular ? "text-white/70" : "text-text-2")}>4 BHK+</div><div className="font-medium">{inr(p.price4 ?? p.price3)}{p.period === "per year" ? "/yr" : ""}</div></div>
                   </div>
                 )}
-                <Link href="/access" className={cn("btn mt-4 w-full", p.popular ? "btn-white" : "btn-accent")}>{p.cta} <ArrowRight size={16} /></Link>
+                <Link href={START} className={cn("btn mt-4 w-full", p.popular ? "btn-white" : "btn-accent")}>{p.cta} <ArrowRight size={16} /></Link>
               </article>
             </Reveal>
           ))}
@@ -173,7 +174,7 @@ export function Pricing({ full }: { full?: boolean }) {
               {addOns.map((a) => {
                 const I = addOnIcon[a.id as keyof typeof addOnIcon];
                 return (
-                  <Link key={a.id} href={a.id === "cleaning" || a.id === "deep" ? "/cleaning" : "/access"} className="card group flex items-start gap-3 bg-white p-4 shadow-card transition hover:-translate-y-0.5">
+                  <Link key={a.id} href={a.id === "cleaning" || a.id === "deep" ? "/cleaning" : START} className="card group flex items-start gap-3 bg-white p-4 shadow-card transition hover:-translate-y-0.5">
                     <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-accent-soft text-accent"><I size={17} /></span>
                     <div className="min-w-0">
                       <div className="flex items-baseline gap-2"><span className="text-[15px] font-medium">{a.name}</span></div>
@@ -221,7 +222,7 @@ export function Pricing({ full }: { full?: boolean }) {
                   <h3 className="t-1 mt-1 max-w-[14ch]">What one visit actually covers</h3>
                   <p className="t-body mt-4 max-w-[44ch] text-text-2">Not a walk-around and a vibe. A structured checklist, proof on every item, and a report in your inbox within the hour.</p>
                   <div className="mt-5 flex flex-wrap gap-2">{visitUseCases.map((u) => <span key={u} className="chip">{u}</span>)}</div>
-                  <Link href="/access" className="btn btn-accent mt-7">Join the waitlist <ArrowRight size={16} /></Link>
+                  <Link href={START} className="btn btn-accent mt-7">{START_LABEL} <ArrowRight size={16} /></Link>
                 </Reveal>
               </div>
               <Reveal className="lg:col-span-7">

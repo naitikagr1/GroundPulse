@@ -1,11 +1,14 @@
 import { cn } from "@/lib/cn";
+import { SCENE } from "@/lib/photos";
 
 export type EvidenceVariant = "bathroom" | "kitchen" | "bedroom" | "balcony" | "electrical" | "entrance" | "living";
 
 type Props = {
   variant?: EvidenceVariant;
-  /** Drop a real photo in /public/media and pass its path to replace the abstract composition. */
-  src?: string;
+  /** A photo for this frame. Left out, the room's own photo (lib/photos)
+      shows, or the drawing; `null` keeps the drawing — for a scene that
+      has no photo of its own yet and must not borrow the room's. */
+  src?: string | null;
   id?: string;
   room?: string;
   time?: string;
@@ -128,14 +131,16 @@ export function EvidenceFrame({
   dense,
 }: Props) {
   const color = toneColor[tone];
+  /* a photo for the room when there is one; the drawing until then */
+  const photo = src === null ? undefined : src ?? SCENE[variant];
   return (
     <figure
       className={cn("@container relative overflow-hidden rounded-[10px] bg-[#15181c] select-none", className)}
       style={ratio === "auto" ? undefined : { aspectRatio: ratio }}
     >
-      {src ? (
+      {photo ? (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={src} alt={room} loading="lazy" className="absolute inset-0 h-full w-full object-cover" />
+        <img src={photo} alt={room} loading="lazy" className="absolute inset-0 h-full w-full object-cover" />
       ) : (
         scenes[variant]
       )}

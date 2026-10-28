@@ -40,7 +40,7 @@ export default async function Page({ params }: PageProps<"/app/properties/[id]">
       <Reveal>
         <Panel className="overflow-hidden">
           <div className="relative">
-            <EvidenceFrame variant={p.cover} id="" room={p.locality || p.city} time={lastReport ? `last checked ${fmtDate(lastReport.publishedAt)}` : "not yet visited"} tone={score === null ? undefined : score >= 70 ? "pass" : score >= 40 ? "attn" : "fail"} ratio="16 / 6" />
+            <EvidenceFrame variant={p.cover} src={null} id="" room={p.locality || p.city} time={lastReport ? `last checked ${fmtDate(lastReport.publishedAt)}` : "not yet visited"} tone={score === null ? undefined : score >= 70 ? "pass" : score >= 40 ? "attn" : "fail"} ratio="16 / 6" />
           </div>
           <div className="flex flex-wrap items-start gap-5 p-6">
             <div className="grow basis-[15rem]">

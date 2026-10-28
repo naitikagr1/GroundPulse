@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowRight, MapPin } from "lucide-react";
 import { EASE } from "@/lib/motion";
+import { APPS_LIVE } from "@/lib/flags";
+import { START } from "@/lib/start";
 
 /** Opendoor-style persistent address bar that appears once the hero scrolls away. */
 export function StickyBar() {
@@ -27,7 +29,7 @@ export function StickyBar() {
     <AnimatePresence>
       {show && (
         <motion.form initial={{ y: 80, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 80, opacity: 0 }} transition={{ duration: 0.45, ease: EASE }}
-          onSubmit={(e) => { e.preventDefault(); router.push(`/access${v ? `?address=${encodeURIComponent(v)}` : ""}`); }}
+          onSubmit={(e) => { e.preventDefault(); router.push(APPS_LIVE ? START : `/access${v ? `?address=${encodeURIComponent(v)}` : ""}`); }}
           className="fixed inset-x-3 bottom-[calc(1rem+env(safe-area-inset-bottom))] z-30 mx-auto max-w-[760px] sm:inset-x-6 sm:bottom-[calc(1.5rem+env(safe-area-inset-bottom))]">
           <div className="addr addr-sm !bg-white !shadow-[0_0_0_1px_var(--line-2),0_20px_40px_-16px_rgba(35,32,29,.35)]">
             <MapPin size={16} className="shrink-0 text-text-2" />

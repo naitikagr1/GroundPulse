@@ -5,7 +5,7 @@ import {
   Home as HomeIcon, Hourglass, MapPin, Plus, Radio, Wrench,
 } from "lucide-react";
 import { requireOwner } from "@/lib/auth";
-import { issueHref, propertyViews, portfolioScore, openIssues, timeline, invoices, inspectorsById, repairsToSchedule, visits as allVisits, isOverdue, UPCOMING } from "@/lib/queries";
+import { freeSpotsLeft, issueHref, propertyViews, portfolioScore, openIssues, timeline, invoices, inspectorsById, repairsToSchedule, visits as allVisits, isOverdue, UPCOMING } from "@/lib/queries";
 import { PropertyCard } from "@/components/app/PropertyCard";
 import { FoundingCard } from "@/components/app/FoundingCard";
 import { EntryCode } from "@/components/app/EntryCode";
@@ -18,8 +18,8 @@ import { cn } from "@/lib/cn";
 
 export default async function Dashboard() {
   const user = await requireOwner();
-  const [views, issues, events, invs, inspectors, toSchedule, mine] = await Promise.all([
-    propertyViews(user.id), openIssues(user.id), timeline(user.id), invoices(user.id), inspectorsById(), repairsToSchedule(user.id), allVisits(user.id),
+  const [views, issues, events, invs, inspectors, toSchedule, mine, freeLeft] = await Promise.all([
+    propertyViews(user.id), openIssues(user.id), timeline(user.id), invoices(user.id), inspectorsById(), repairsToSchedule(user.id), allVisits(user.id), freeSpotsLeft(),
   ]);
 
   const score = portfolioScore(views);
@@ -36,16 +36,21 @@ export default async function Dashboard() {
   const quoting = issues.filter((i) => !i.quote);
   const first = user.name.split(" ")[0];
 
+  /* A new account lands here straight from the welcome: the free visit
+     leads, and adding the home is the way to it. */
   if (!views.length) {
     return (
-      <Panel>
-        <Empty
-          icon={HomeIcon}
-          title="Nothing here yet."
-          body="Add the first property and we will show you its condition, its visits and every decision waiting on you — all on this page."
-          cta={<Link href="/app/properties/new" className="btn btn-accent"><Plus size={16} /> Add a property</Link>}
-        />
-      </Panel>
+      <div className="grid gap-5">
+        <Reveal><FoundingCard user={user} properties={[]} left={freeLeft} firstTime /></Reveal>
+        <Panel>
+          <Empty
+            icon={HomeIcon}
+            title="Nothing here yet."
+            body="Add the first property and we will show you its condition, its visits and every decision waiting on you — all on this page."
+            cta={<Link href="/app/properties/new?then=book" className="btn btn-accent"><Plus size={16} /> Add a property</Link>}
+          />
+        </Panel>
+      </div>
     );
   }
 
@@ -88,7 +93,7 @@ export default async function Dashboard() {
       </Reveal>
 
       {/* ── the launch offer, while it is still theirs ──────── */}
-      <Reveal delay={0.04}><FoundingCard user={user} properties={views.map((v) => v.property)} compact /></Reveal>
+      <Reveal delay={0.04}><FoundingCard user={user} properties={views.map((v) => v.property)} left={freeLeft} firstTime={!mine.length} compact /></Reveal>
 
       {/* ── happening right now ─────────────────────────────── */}
       {live && liveProperty && (
